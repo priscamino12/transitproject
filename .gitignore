@@ -1,0 +1,11 @@
+# Node modules
+node_modules/
+
+# Next.js build & cache
+.next/
+out/
+
+# Logs
+*.log
+
+node_modules/
