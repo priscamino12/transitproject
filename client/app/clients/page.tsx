@@ -5,12 +5,12 @@ import { ClientsTable } from "@/components/clients/clients-table";
 import { ClientsHeader } from "@/components/clients/clients-header";
 import { useState } from "react";
 import { ClientForm } from "@/components/clients/client-form-modal";
-import api from "@/app/axiosInstance";
 
 export default function ClientsPage() {
   const [showForm, setShowForm] = useState(false);
   const [selectedClient, setSelectedClient] = useState<any>(null);
   const [editMode, setEditMode] = useState(false);
+  const [tableKey, setTableKey] = useState(0); // ← clé pour forcer re-render
 
   const handleAddClient = () => {
     setSelectedClient(null);
@@ -24,19 +24,13 @@ export default function ClientsPage() {
     setShowForm(true);
   };
 
-  const handleSaveClient = async (data: any) => {
-    try {
-      if (editMode && selectedClient) {
-        await api.put(`/client/${selectedClient.idClient}`, data);
-      } else {
-        await api.post("/client/", data);
-      }
-      setShowForm(false);
-      setSelectedClient(null);
-      setEditMode(false);
-    } catch (error) {
-      console.error("Erreur lors de l'ajout/modification :", error);
-    }
+  const handleSaveClient = (data: any) => {
+    setShowForm(false);
+    setSelectedClient(null);
+    setEditMode(false);
+
+    // forcer re-render du tableau pour récupérer la nouvelle liste
+    setTableKey(prev => prev + 1);
   };
 
   const handleCancel = () => {
@@ -51,7 +45,7 @@ export default function ClientsPage() {
         {!showForm ? (
           <>
             <ClientsHeader onAddClient={handleAddClient} />
-            <ClientsTable onEditClient={handleEditClient} />
+            <ClientsTable key={tableKey} onEditClient={handleEditClient} />
           </>
         ) : (
           <ClientForm

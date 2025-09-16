@@ -4,49 +4,15 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { FaEdit, FaTrash, FaEye, FaPlane } from "react-icons/fa"
+import { useEffect, useState } from "react"
+import api from "@/app/axiosInstance"
+import { DeleteConfirmModal } from "@/components/clients/delete-confirm-modal"
 
-const expeditions = [
-  {
-    id: "AF001",
-    compagnie: "Air France",
-    vol: "AF1234",
-    origine: "CDG - Paris",
-    destination: "JFK - New York",
-    dateDepart: "2024-01-20 14:30",
-    dateArrivee: "2024-01-20 18:45",
-    statut: "En vol",
-    client: "Société ABC",
-    poids: "2.5 T",
-    pieces: 45,
-  },
-  {
-    id: "LH002",
-    compagnie: "Lufthansa",
-    vol: "LH456",
-    origine: "CDG - Paris",
-    destination: "NRT - Tokyo",
-    dateDepart: "2024-01-21 10:15",
-    dateArrivee: "2024-01-22 06:30",
-    statut: "Programmé",
-    client: "Tech Solutions",
-    poids: "1.8 T",
-    pieces: 32,
-  },
-  {
-    id: "BA003",
-    compagnie: "British Airways",
-    vol: "BA789",
-    origine: "LHR - Londres",
-    destination: "CDG - Paris",
-    dateDepart: "2024-01-19 16:20",
-    dateArrivee: "2024-01-19 18:45",
-    statut: "Arrivé",
-    client: "Import Export Ltd",
-    poids: "3.2 T",
-    pieces: 67,
-  },
-]
 
+interface TransAerienTableProps {
+   searchTerm: string
+  onEditTransportAerien: (transportAerien: any) => void;
+}
 const getStatusColor = (statut: string) => {
   switch (statut) {
     case "En vol":
@@ -61,73 +27,133 @@ const getStatusColor = (statut: string) => {
       return "bg-gray-500"
   }
 }
+export function AerienTable({ onEditTransportAerien, searchTerm }: TransAerienTableProps) {
 
-export function AerienTable() {
+
+  const [transportAeriens, setTransportAeriens] = useState<any[]>([]);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [transportAerienToDelete, setTransportAerienToDelete] = useState<any | null>(null);
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+
+  const allTransAerienne = async () => {
+    try {
+      const response = await api.get("/transAerienne/");
+      setTransportAeriens(response.data);
+      // console.log(response.data);
+    } catch (error) {
+      console.error("Erreur de récuperation de données transport aérien", error);
+    }
+  };
+
+
+  useEffect(() => {
+    allTransAerienne();
+  }, []);
+
+  const filteredData = transportAeriens.filter((item) =>
+    [
+      item.numVol,
+      item.nomCompagnie,
+      item.dateChargement,
+      item.paysChargement,
+      item.villeChargement,
+      item.paysDechargement,
+      item.villeDechargement,
+    ]
+      .filter(Boolean)
+      .some((field) => field.toLowerCase().includes(searchTerm.toLowerCase()))
+  )
+
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentData = filteredData.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+  const handlePageChange = (pageNumber: number) => setCurrentPage(pageNumber);
+
+  const handleDelete = (transportAerien: any) => {
+    setTransportAerienToDelete(transportAerien);
+    setIsDeleteModalOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (transportAerienToDelete) {
+      try {
+        await api.delete(`/transAerienne/${transportAerienToDelete.idTransAerienne}`);
+        setIsDeleteModalOpen(false);
+        setTransportAerienToDelete(null);
+        allTransAerienne();
+      } catch (error) {
+        console.error("Erreur de suppression :", error);
+      }
+    }
+  };
+
+
+
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Expéditions Aériennes ({expeditions.length})</CardTitle>
+        <CardTitle>Transport Aériennes ({transportAeriens.length})</CardTitle>
       </CardHeader>
       <CardContent>
         <Table>
           <TableHeader>
             <TableRow>
               <TableHead>Vol</TableHead>
-              <TableHead>Route</TableHead>
-              <TableHead>Horaires</TableHead>
-              <TableHead>Client</TableHead>
-              <TableHead>Cargo</TableHead>
+              <TableHead>Compagnie</TableHead>
+              <TableHead>Date Chargement</TableHead>
+              <TableHead>Chargement</TableHead>
+              <TableHead>Dechargement</TableHead>
               <TableHead>Statut</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {expeditions.map((expedition) => (
-              <TableRow key={expedition.id}>
+            {currentData.map((transportAerien) => (
+              <TableRow key={transportAerien.id}>
                 <TableCell>
                   <div className="flex items-center space-x-3">
                     <div className="p-2 bg-primary/10 rounded-lg">
                       <FaPlane className="h-4 w-4 text-primary" />
                     </div>
-                    <div>
-                      <div className="font-medium">{expedition.vol}</div>
-                      <div className="text-sm text-muted-foreground">{expedition.compagnie}</div>
-                    </div>
+                    <div className="font-medium">{transportAerien.numVol}</div>
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <div className="font-medium">{transportAerien.nomCompagnie} </div>
+                </TableCell>
+                <TableCell>
+                  <div className="text-sm">{transportAerien.dateChargement}</div>
+                </TableCell>
+                <TableCell>
+                  <div>
+                    <div className="font-medium">Pays: {transportAerien.paysChargement}</div>
+                    <div className="text-sm text-muted-foreground">Ville: {transportAerien.villeChargement}</div>
                   </div>
                 </TableCell>
                 <TableCell>
                   <div>
-                    <div className="font-medium">{expedition.origine}</div>
-                    <div className="text-sm text-muted-foreground">→ {expedition.destination}</div>
+                    <div className="font-medium">Pays: {transportAerien.paysDechargement}</div>
+                    <div className="text-sm text-muted-foreground">Ville: {transportAerien.villeDechargement}</div>
                   </div>
                 </TableCell>
+
                 <TableCell>
-                  <div>
-                    <div className="text-sm">Départ: {expedition.dateDepart}</div>
-                    <div className="text-sm text-muted-foreground">Arrivée: {expedition.dateArrivee}</div>
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <div className="font-medium">{expedition.client}</div>
-                </TableCell>
-                <TableCell>
-                  <div>
-                    <div className="font-medium">{expedition.poids}</div>
-                    <div className="text-sm text-muted-foreground">{expedition.pieces} pièces</div>
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <Badge className={getStatusColor(expedition.statut)}>{expedition.statut}</Badge>
+                  <Badge className={getStatusColor(transportAerien.statut)}>{transportAerien.statut}</Badge>
                 </TableCell>
                 <TableCell className="text-right">
                   <div className="flex items-center justify-end space-x-2">
-                    <Button variant="ghost" size="sm">
-                      <FaEye className="h-4 w-4" />
-                    </Button>
-                    <Button variant="ghost" size="sm">
+                    <Button variant="ghost" size="sm" onClick={() => onEditTransportAerien(transportAerien)}>
                       <FaEdit className="h-4 w-4" />
                     </Button>
-                    <Button variant="ghost" size="sm" className="text-red-600 hover:text-red-700">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleDelete(transportAerien)}
+                      className="text-red-600 hover:text-red-700"
+                    >
                       <FaTrash className="h-4 w-4" />
                     </Button>
                   </div>
@@ -136,6 +162,28 @@ export function AerienTable() {
             ))}
           </TableBody>
         </Table>
+
+        <div className="mt-4 flex justify-center space-x-2">
+          {Array.from({ length: totalPages }, (_, index) => (
+            <Button
+              key={index}
+              size="sm"
+              variant={currentPage === index + 1 ? "default" : "outline"}
+              onClick={() => handlePageChange(index + 1)}
+            >
+              {index + 1}
+            </Button>
+          ))}
+        </div>
+
+        <DeleteConfirmModal
+          isOpen={isDeleteModalOpen}
+          onClose={() => setIsDeleteModalOpen(false)}
+          onConfirm={confirmDelete}
+          clientName={transportAerienToDelete?.nomCompagnie || ""}
+        />
+
+
       </CardContent>
     </Card>
   )

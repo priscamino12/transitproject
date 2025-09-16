@@ -4,9 +4,10 @@ import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { FaEdit, FaTrash } from "react-icons/fa";
+import { FaEdit, FaFilter, FaSearch, FaTrash } from "react-icons/fa";
 import { DeleteConfirmModal } from "./delete-confirm-modal";
 import api from "@/app/axiosInstance";
+import { Input } from "../ui/input";
 
 interface ClientsTableProps {
   onEditClient: (client: any) => void;
@@ -72,21 +73,31 @@ export function ClientsTable({ onEditClient }: ClientsTableProps) {
         <CardTitle>Liste des Clients ({clients.length})</CardTitle>
       </CardHeader>
       <CardContent>
-        <input
-          type="text"
-          placeholder="Rechercher..."
-          className="mb-4 w-full rounded border px-3 py-2"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-        />
+        <div className="flex flex-col md:flex-row items-center md:space-x-4 space-y-2 md:space-y-0 w-full">
+          <div className="relative flex-1 w-full">
+            <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-5 w-5" />
+            <Input
+              placeholder="Rechercher client..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10 w-full"
+            />
+          </div>
+          <Button variant="outline" className="w-full md:w-auto">
+            <FaFilter className="mr-2 h-5 w-5" />
+            Filtres
+          </Button>
+        </div>
+
+
+
+
 
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>#</TableHead>
               <TableHead>Nom</TableHead>
               <TableHead>Email</TableHead>
-              <TableHead>Contact</TableHead>
               <TableHead>Adresse</TableHead>
               <TableHead>Téléphone</TableHead>
               <TableHead>CNI</TableHead>
@@ -96,10 +107,8 @@ export function ClientsTable({ onEditClient }: ClientsTableProps) {
           <TableBody>
             {currentData.map((client) => (
               <TableRow key={client.idClient}>
-                <TableCell>{client.idClient}</TableCell>
                 <TableCell>{client.nomClient}</TableCell>
                 <TableCell>{client.emailClient}</TableCell>
-                <TableCell>{client.contactClient}</TableCell>
                 <TableCell>{client.adresseClient}</TableCell>
                 <TableCell>{client.telClient}</TableCell>
                 <TableCell>{client.CINClient}</TableCell>

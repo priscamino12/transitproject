@@ -2,23 +2,46 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts"
+import { useEffect, useState } from "react"
+import api from "@/app/axiosInstance"
 
-const data = [
-  { month: "Jan", expeditions: 65, revenus: 180000 },
-  { month: "Fév", expeditions: 78, revenus: 220000 },
-  { month: "Mar", expeditions: 82, revenus: 245000 },
-  { month: "Avr", expeditions: 95, revenus: 280000 },
-  { month: "Mai", expeditions: 88, revenus: 265000 },
-  { month: "Jun", expeditions: 102, revenus: 310000 },
-  { month: "Jul", expeditions: 115, revenus: 340000 },
-  { month: "Aoû", expeditions: 108, revenus: 325000 },
-  { month: "Sep", expeditions: 125, revenus: 375000 },
-  { month: "Oct", expeditions: 132, revenus: 395000 },
-  { month: "Nov", expeditions: 128, revenus: 385000 },
-  { month: "Déc", expeditions: 145, revenus: 420000 },
-]
+interface MonthlyData {
+  month: string
+  expeditions: number
+  revenus: number
+}
 
 export function PerformanceChart() {
+  const [data, setData] = useState<MonthlyData[]>([])
+  const months = ["Jan", "Fév", "Mar", "Avr", "Mai", "Jun", "Jul", "Aoû", "Sep", "Oct", "Nov", "Déc"]
+
+  const mergeArrays = (maritime: any[], aerienne: any[]) => {
+    const merged: MonthlyData[] = months.map((m, i) => {
+      const monthNumber = i + 1
+      const maritimeData = maritime.find((item) => Number(item.mois) === monthNumber)
+      const aerienneData = aerienne.find((item) => Number(item.mois) === monthNumber)
+      return {
+        month: m,
+        expeditions: (maritimeData?.count || 0) + (aerienneData?.count || 0),
+        revenus: (maritimeData?.revenus || 0) + (aerienneData?.revenus || 0),
+      }
+    })
+    return merged
+  }
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const maritime = await api.get("/hbl/count/byMonth")  // Retourne [{mois:1,count:10,revenus:1000}, ...]
+        const aerienne = await api.get("/hawb/count/byMonth") // Même format
+        setData(mergeArrays(maritime.data, aerienne.data))
+      } catch (error) {
+        console.error("Erreur lors de la récupération des données:", error)
+      }
+    }
+    fetchData()
+  }, [])
+
   return (
     <Card>
       <CardHeader>

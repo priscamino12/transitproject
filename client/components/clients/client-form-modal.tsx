@@ -1,6 +1,6 @@
-"use client"
+"use client";
 
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -13,13 +13,12 @@ import Swal from "sweetalert2"
 interface ClientFormProps {
   client?: any
   isEdit?: boolean
-  onSave: (data: any) => void   // <- accepter les données du formulaire
+  onSave: (data: any) => void   // <- transmettre les données au parent
   onCancel: () => void
 }
 
-
 export function ClientForm({ client, isEdit = false, onSave, onCancel }: ClientFormProps) {
-  const idEmploye = 1 // Remplace par l'ID de l'utilisateur connecté si tu as une fonction pour ça
+  const idEmploye = 1 // remplacer par l’ID connecté si besoin
 
   const [formData, setFormData] = useState({
     nomClient: client?.nomClient || "",
@@ -40,14 +39,18 @@ export function ClientForm({ client, isEdit = false, onSave, onCancel }: ClientF
     e.preventDefault()
 
     try {
+      let responseData;
       if (isEdit && client?.idClient) {
-        await api.put(`/client/${client.idClient}`, formData)
+        const res = await api.put(`/client/${client.idClient}`, formData)
         Swal.fire({ icon: "success", title: "Modifié!", text: "Le client a été modifié.", timer: 2000, showConfirmButton: false })
+        responseData = { ...client, ...formData }
       } else {
-        await api.post("/client/", formData)
+        const res = await api.post("/client/", formData)
         Swal.fire({ icon: "success", title: "Ajouté!", text: "Le client a été ajouté.", timer: 2000, showConfirmButton: false })
+        responseData = res.data
       }
-      onSave()
+
+      onSave(responseData) // ← transmet les données au parent
     } catch (err: any) {
       Swal.fire({ icon: "error", title: "Erreur", text: err.response?.data?.error || err.message })
     }

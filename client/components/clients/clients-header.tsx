@@ -114,12 +114,7 @@ export function ClientsHeader({ onAddClient }: ClientsHeaderProps) {
           </Button>
         </div>
 
-        <div className="flex items-center space-x-4">
-          <Button variant="outline">
-            <FaFilter className="mr-2 h-4 w-4" />
-            Filtres
-          </Button>
-        </div>
+        
       </div>
 
       {/* 👉 Ici rendu conditionnel du formulaire */}
