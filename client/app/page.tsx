@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 
 export default function HomePage() {
-  redirect("/public"); // redirige automatiquement vers la page publique
+  redirect("/auth"); // redirige automatiquement vers la page publique
 }
 /* 
 export default function HomePage() {
