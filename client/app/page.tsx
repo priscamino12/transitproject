@@ -1,10 +1,9 @@
-import { Layout } from "@/components/Layout"
-import { DashboardStats } from "@/components/dashboard/dashboard-stats"
-import { RecentTransactions } from "@/components/dashboard/recent-transactions"
-import { ShipmentStatus } from "@/components/dashboard/shipment-status"
-import { PerformanceChart } from "@/components/dashboard/performance-chart"
-import { QuickActions } from "@/components/dashboard/quick-actions"
+import { redirect } from "next/navigation";
 
+export default function HomePage() {
+  redirect("/public"); // redirige automatiquement vers la page publique
+}
+/* 
 export default function HomePage() {
   return (
     <Layout>
@@ -33,3 +32,4 @@ export default function HomePage() {
     </Layout>
   )
 }
+ */
