@@ -174,7 +174,7 @@ export function MastersTable({ onEditMaster }: MastersTableProps) {
                     variant="ghost"
                     size="sm"
                     title="Modifier"
-                    onClick={() => onEditMaster(m)} // <-- ici
+                    onClick={() => onEditMaster(m)}
                   >
                     <FaEdit className="w-4 h-4" />
                   </Button>

@@ -14,7 +14,7 @@ export const ProtectedAdmin = ({ children }: { children: React.ReactNode }) => {
     }
   }, [user, loading, router])
 
-  if (loading) return <p>Chargement...</p> // évite le flash vers login
+  if (loading) return <p>Chargement...</p>
   if (!user) return null
 
   return <>{children}</>

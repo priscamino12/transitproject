@@ -3,10 +3,11 @@
 import { useEffect, useState } from "react";
 import api from "@/app/axiosInstance";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { FaPlane, FaShip, FaEye, FaDownload, FaEdit, FaTrash } from "react-icons/fa";
+import { FaPlane, FaShip, FaEye, FaDownload, FaEdit, FaTrash, FaSearch } from "react-icons/fa";
 import { Button } from "@/components/ui/button";
 import { DeleteConfirmModal } from "@/components/admin/clients/delete-confirm-modal";
 import { Modal } from "../modal/modal";
+import { Input } from "@/components/ui/input";
 
 type House = {
     id: number;
@@ -18,8 +19,11 @@ type House = {
     volume: number;
     description: string;
     masterNumero: string;
+    idMBL?: number;
     clientExp: string;
     clientDest: string;
+    idExpediteur?: number;
+    idDestinataire?: number;
 };
 
 interface HousesTableProps {
@@ -39,47 +43,51 @@ export function HouseTabs({ onEditHouse }: HousesTableProps) {
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 10;
 
+    const [searchTerm, setSearchTerm] = useState("");
     const openModal = (house: House) => {
         setSelectedHouse(house);
         setIsModalOpen(true);
-    };
-
-    const closeModal = () => {
-        setSelectedHouse(null);
-        setIsModalOpen(false);
     };
 
     const fetchHouses = async () => {
         try {
             const [hawbRes, hblRes] = await Promise.all([api.get("/hawb"), api.get("/hbl")]);
 
-            const airData = hawbRes.data.map((h: any) => ({
-                id: h.idHAWB,
-                type: "HAWB" as const,
-                numero: h.numHAWB,
-                dateEmmission: h.dateEmmission,
-                nbColis: h.nbColis,
-                poid: h.poid,
-                volume: h.volume,
-                description: h.description,
-                masterNumero: h.MAWB.numMAWB,
-                clientExp: h.clientExp.nomClient,
-                clientDest: h.clientDest.nomClient,
-            }));
+            const airData = hawbRes.data
+                .map((h: any) => ({
+                    id: h.idHAWB,
+                    type: "HAWB" as const,
+                    numero: h.numHAWB,
+                    dateEmmission: h.dateEmmission,
+                    nbColis: h.nbColis,
+                    poid: h.poid,
+                    volume: h.volume,
+                    description: h.description,
+                    masterNumero: h.MAWB.numMAWB,
+                    clientExp: h.clientExp.nomClient,
+                    clientDest: h.clientDest.nomClient,
+                }));
 
-            const seaData = hblRes.data.map((h: any) => ({
-                id: h.idHBL,
-                type: "HBL" as const,
-                numero: h.numHBL,
-                dateEmmission: h.dateEmmission,
-                nbColis: h.nbColis,
-                poid: h.poid,
-                volume: h.volume,
-                description: h.description,
-                masterNumero: h.MBL.numMBL,
-                clientExp: h.clientExp.nomClient,
-                clientDest: h.clientDest.nomClient,
-            }));
+
+            const seaData = hblRes.data
+                .map((h: any) => ({
+                    id: h.idHBL,
+                    type: "HBL" as const,
+                    numero: h.numHBL,
+                    dateEmmission: h.dateEmmission,
+                    nbColis: h.nbColis,
+                    poid: h.poid,
+                    volume: h.volume,
+                    description: h.description,
+                    masterNumero: h.MBL ? h.MBL.numMBL : "Non défini",
+                    idMBL: h.MBL ? h.MBL.idMBL : undefined,
+                    clientExp: h.clientExp ? h.clientExp.nomClient : "Non défini",
+                    clientDest: h.clientDest ? h.clientDest.nomClient : "Non défini",
+                    idExpediteur: h.clientExp ? h.clientExp.idClient : undefined,
+                    idDestinataire: h.clientDest ? h.clientDest.idClient : undefined
+                }));
+
+
 
             setHouses([...airData, ...seaData].sort(
                 (a, b) => new Date(a.dateEmmission).getTime() - new Date(b.dateEmmission).getTime()
@@ -114,14 +122,12 @@ export function HouseTabs({ onEditHouse }: HousesTableProps) {
         }
     };
     if (loading) return <div className="p-4">Chargement des données...</div>;
-    const filteredData = houses.filter((item) =>
-        [
-            item.numero,
-            item.clientDest,
-            item.clientExp,
-        ]
-            .filter(Boolean)
-    )
+    const filteredData = houses.filter(
+        (item) =>
+            item.numero?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            item.clientDest?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            item.clientExp?.toLowerCase().includes(searchTerm.toLowerCase())
+    );
     const indexOfLastItem = currentPage * itemsPerPage;
     const indexOfFirstItem = indexOfLastItem - itemsPerPage;
     const currentData = filteredData.slice(indexOfFirstItem, indexOfLastItem);
@@ -131,6 +137,17 @@ export function HouseTabs({ onEditHouse }: HousesTableProps) {
     return (
         <>
             <div className="overflow-x-auto w-full">
+                 <div className="flex flex-col md:flex-row items-center md:space-x-4 space-y-2 md:space-y-0 w-full">
+                          <div className="relative flex-1 w-full">
+                            <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-5 w-5" />
+                            <Input
+                              placeholder="Rechercher document master..."
+                              value={searchTerm}
+                              onChange={(e) => setSearchTerm(e.target.value)}
+                              className="pl-10 w-full"
+                            />
+                          </div>
+                        </div>
                 <Table className="min-w-[700px] md:min-w-full">
                     <TableHeader>
                         <TableRow>

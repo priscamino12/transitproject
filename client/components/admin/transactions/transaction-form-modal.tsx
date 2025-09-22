@@ -98,6 +98,27 @@ export function TransactionFormModal({ transaction, isEdit = false, onSave, onCa
     }
   };
 
+   const handleSubmitHBL = async (data: any) => {
+    const token = localStorage.getItem("token");
+    const decoded: any = jwtDecode(token!);
+    const creerPar = decoded.id;
+
+    api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+
+    try {
+      if (isEdit && transaction) {
+        await api.put(`/hbl/${transaction.id}`, data);
+        Swal.fire({ icon: "success", title: "Modifié !", text: "HBL modifié avec succès." });
+      } else {
+        await api.post("/hbl", { ...data, creerPar, modifierPar: creerPar });
+        Swal.fire({ icon: "success", title: "Ajouté !", text: "HBL créé avec succès." });
+      }
+      onSave();
+    } catch (err: any) {
+      Swal.fire({ icon: "error", title: "Erreur", text: err.response?.data?.message || "Une erreur est survenue." });
+    }
+  };
+
 
 
   return (
@@ -123,7 +144,13 @@ export function TransactionFormModal({ transaction, isEdit = false, onSave, onCa
             <TabsTrigger value="HBL">HBL</TabsTrigger>
           </TabsList>
 
-          {selectedType === "MAWB" && <MAWBForm onCancel={onCancel} onSubmit={handleSubmitMAWB} initialData={transaction} />}
+          {selectedType === "MAWB" && 
+          <MAWBForm 
+          onCancel={onCancel}
+          onSubmit={handleSubmitMAWB}
+          initialData={transaction}
+          />}
+
           {selectedType === "HAWB" && (
             <HAWBForm
               onCancel={onCancel}
@@ -132,8 +159,19 @@ export function TransactionFormModal({ transaction, isEdit = false, onSave, onCa
             />
           )}
 
-          {selectedType === "MBL" && <MBLForm onSubmit={handleSubmitMBL} onCancel={onCancel} initialData={transaction} />}
-          {selectedType === "HBL" && <HBLForm onCancel={onCancel} onSubmit={handleSubmitMAWB} />}
+          {selectedType === "MBL" && 
+          <MBLForm
+          onSubmit={handleSubmitMBL}
+          onCancel={onCancel}
+          initialData={transaction} 
+          />}
+
+          {selectedType === "HBL" && 
+          <HBLForm
+          onCancel={onCancel}
+          onSubmit={handleSubmitHBL}
+          initialData={transaction} 
+          />}
         </Tabs>
       </div>
     </div>
