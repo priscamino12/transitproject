@@ -5,6 +5,7 @@ const crypto = require("crypto");
 const { log } = require("console");
 require("dotenv").config();
 const SECRET_KEY = process.env.SECRET_KEY;
+
 const SALT_ROUNDS = parseInt(process.env.SALT_ROUNDS, 10);
 class EmployeService {
   constructor(employeRepository) {

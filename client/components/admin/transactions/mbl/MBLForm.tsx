@@ -5,106 +5,97 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import api from "@/app/axiosInstance"
-import Swal from "sweetalert2"
 
-type Props = { onSubmit: (data: any) => void }
-interface MBLFormModalProps {
-  mblTransaction?: any
-  isEdit?: boolean
-  onSave: (data: any) => void
-  onCancel: () => void
-  currentUserId?: number
+type Props = {
+  onSubmit: (data: any) => void
+  initialData?: any;    
+  onCancel: () => void;
 }
 
+export function MBLForm({ onSubmit, initialData, onCancel }: Props) {
+  const formatDate = (dateStr?: string) => dateStr ? dateStr.split("T")[0] : "";
 
-export function MBLForm({ mblTransaction, isEdit = false, onSave, onCancel, currentUserId = 1 }: MBLFormModalProps) {
   const [form, setForm] = useState({
     numMBL: "",
     idTransport: "",
     dateEmission: "",
     dateArrivePrevue: "",
-    creerPar: "",
-  })
+  });
 
+  const [transports, setTransports] = useState<{ idTransMaritime: number; nomNavire: string; numIMO: string }[]>([]);
+
+  // Initialisation du formulaire si modification
   useEffect(() => {
-    if (isEdit && mblTransaction) {
+    if (initialData) {
       setForm({
-        numMBL: mblTransaction.numMBL || "",
-        idTransport: mblTransaction.idTransport || "",
-        dateEmission: mblTransaction.dateEmission
-          ? mblTransaction.dateEmission.slice(0, 10)
-          : "",
-        dateArrivePrevue: mblTransaction.dateArrivePrevue
-          ? mblTransaction.dateArrivePrevue.slice(0, 10)
-          : "",
-          creerPar: mblTransaction.creerPar || currentUserId,
-      })
+        numMBL: initialData.numero || "",
+        idTransport: "", // on laisse vide pour l'instant, sera mis à jour après fetch transports
+        dateEmission: formatDate(initialData.dateEmission),
+        dateArrivePrevue: formatDate(initialData.dateArrivePrevue),
+      });
     }
-  }, [isEdit, mblTransaction, currentUserId])
+  }, [initialData]);
 
+  // Récupération des transports
+  useEffect(() => {
+    const fetchTransports = async () => {
+      try {
+        const res = await api.get("/transMaritime/");
+        setTransports(res.data);
 
-  const handleChange = (field: string, value: string) => {
-    setForm((prev) => ({ ...prev, [field]: value }))
-  }
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    try {
-      const payload = {
-        ...form,
-        // Assure le bon format pour Sequelize DATE
-        dateEmission: new Date(form.dateEmission),
-        dateArrivePrevue: new Date(form.dateArrivePrevue),
+        // Si on est en modification, on met à jour idTransport avec la valeur correspondante
+        if (initialData?.transportInfo?.idTransMaritime) {
+          setForm(prev => ({ ...prev, idTransport: initialData.transportInfo.idTransMaritime }));
+        }
+      } catch (err) {
+        console.error("Erreur lors du chargement des transports :", err);
       }
+    };
+    fetchTransports();
+  }, [initialData]);
 
-      let responseData
-      if (isEdit && mblTransaction?.idTransAerienne) {
-        await api.put(`/transAerienne/${mblTransaction.idTransAerienne}`, payload)
-        Swal.fire({
-          icon: "success",
-          title: "Modifié!",
-          text: "Transaction maritime modifié.",
-          timer: 2000,
-          showConfirmButton: false,
-        })
-        responseData = { ...mblTransaction, ...payload }
-      } else {
-        const res = await api.post("/transAerienne/", payload)
-        Swal.fire({
-          icon: "success",
-          title: "Ajouté!",
-          text: "Transaction maritime ajouté.",
-          timer: 2000,
-          showConfirmButton: false,
-        })
-        responseData = res.data
-      }
-      onSave(responseData)
-    } catch (err: any) {
-      console.error(err.response?.data || err) // 👈 debug
-      Swal.fire({
-        icon: "error",
-        title: "Erreur",
-        text: err.response?.data?.error || err.message || "Une erreur est survenue",
-      })
-    }
-  }
+  const handleChange = (key: string, value: string) =>
+    setForm({ ...form, [key]: value });
 
-
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onSubmit(form);
+  };
 
   return (
     <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6">
       <Field label="Numéro MBL" value={form.numMBL} onChange={(v) => handleChange("numMBL", v)} />
-      <Field label="ID Transport" value={form.idTransport} onChange={(v) => handleChange("idTransport", v)} />
+
+      <div className="flex flex-col">
+        <Label className="mb-1 text-card-foreground">Transport Maritime</Label>
+        <select
+          value={form.idTransport}
+          onChange={(e) => handleChange("idTransport", e.target.value)}
+          className="border border-gray-300 rounded px-3 py-2 focus:ring focus:ring-blue-300 bg-input text-foreground"
+          required
+        >
+          <option value="">-- Sélectionnez un transport --</option>
+          {transports.map((t) => (
+            <option key={t.idTransMaritime} value={t.idTransMaritime}>
+              {t.nomNavire} - {t.numIMO}
+            </option>
+          ))}
+        </select>
+      </div>
+
       <Field label="Date Émission" type="date" value={form.dateEmission} onChange={(v) => handleChange("dateEmission", v)} />
       <Field label="Date Arrivée Prévue" type="date" value={form.dateArrivePrevue} onChange={(v) => handleChange("dateArrivePrevue", v)} />
 
       <div className="md:col-span-2 flex justify-end space-x-4 mt-4">
-        <Button type="submit" className="px-8">Créer MBL</Button>
-        <Button variant="outline" className="px-8" onClick={onCancel}>Annuler</Button>
+        <Button type="submit" className="px-8">
+          {initialData ? "Modifier MBL" : "Créer MBL"}
+        </Button>
+         <Button variant="outline" className="px-8" type="button" onClick={onCancel}>
+          Annuler
+        </Button>
       </div>
     </form>
-  )
+  );
 }
 
 function Field({ label, value, onChange, type = "text" }: { label: string, value: string, onChange: (v: string) => void, type?: string }) {

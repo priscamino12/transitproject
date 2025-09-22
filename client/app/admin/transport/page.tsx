@@ -1,9 +1,11 @@
 
 import { Layout } from "@/components/admin/Layout"
 import { TransportOverview } from "@/components/admin/transport/transport-overview"
+import { ProtectedAdmin } from "@/app/protectedAdmin"
 
 export default function TransportPage() {
   return (
+    <ProtectedAdmin>
     <Layout>
       <div className="flex-1 space-y-6 p-8 pt-6">
         <div className="flex items-center justify-between">
@@ -15,5 +17,6 @@ export default function TransportPage() {
         <TransportOverview />
       </div>
     </Layout>
+    </ProtectedAdmin>
   )
 }

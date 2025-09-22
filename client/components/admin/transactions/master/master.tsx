@@ -7,6 +7,7 @@ import { FaPlane, FaShip, FaEye, FaEdit, FaTrash, FaDownload, FaSearch, FaFilter
 import api from "@/app/axiosInstance";
 import { Modal } from "../modal/modal";
 import { Input } from "@/components/ui/input";
+import { DeleteConfirmModal } from "../../clients/delete-confirm-modal";
 
 type Master = {
   id: number;
@@ -24,6 +25,9 @@ interface MastersTableProps {
 export function MastersTable({ onEditMaster }: MastersTableProps) {
   const [masters, setMasters] = useState<Master[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+
+  const [masterToDelete, setMasterToDelete] = useState<Master | null>(null);
 
   const [selectedMaster, setSelectedMaster] = useState<Master | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -37,52 +41,70 @@ export function MastersTable({ onEditMaster }: MastersTableProps) {
     setIsModalOpen(true);
   };
 
+  const fetchMasters = async () => {
+    try {
+      const [mawbRes, mblRes] = await Promise.all([api.get("/mawb"), api.get("/mbl")]);
+
+      const airData = mawbRes.data
+        .filter((m: any) => m.TransAerienne)
+        .map((m: any) => ({
+          id: m.idMAWB,
+          type: "MAWB" as const,
+          numero: m.numMAWB,
+          dateEmission: m.dateEmission,
+          dateArrivePrevue: m.dateArrivePrevue,
+          transportName: m.TransAerienne.nomCompagnie,
+          transportInfo: m.TransAerienne,
+        }));
+
+      const seaData = mblRes.data
+        .filter((m: any) => m.TransMaritime)
+        .map((m: any) => ({
+          id: m.idMBL,
+          type: "MBL" as const,
+          numero: m.numMBL,
+          dateEmission: m.dateEmission,
+          dateArrivePrevue: m.dateArrivePrevue,
+          transportName: m.TransMaritime.nomNavire,
+          transportInfo: m.TransMaritime,
+        }));
+
+      setMasters([...airData, ...seaData].sort((a, b) => new Date(a.dateEmission).getTime() - new Date(b.dateEmission).getTime()));
+    } catch (error) {
+      console.error("Erreur de chargement :", error);
+    } finally {
+      setLoading(false);
+    }
+  }
+
   useEffect(() => {
-    const fetchMasters = async () => {
-      try {
-        const [mawbRes, mblRes] = await Promise.all([api.get("/mawb"), api.get("/mbl")]);
-
-        const airData = mawbRes.data
-          .filter((m: any) => m.TransAerienne)
-          .map((m: any) => ({
-            id: m.idMAWB,
-            type: "MAWB" as const,
-            numero: m.numMAWB,
-            dateEmission: m.dateEmission,
-            dateArrivePrevue: m.dateArrivePrevue,
-            transportName: m.TransAerienne.nomCompagnie,
-            transportInfo: m.TransAerienne,
-          }));
-
-        const seaData = mblRes.data
-          .filter((m: any) => m.TransMaritime)
-          .map((m: any) => ({
-            id: m.idMBL,
-            type: "MBL" as const,
-            numero: m.numMBL,
-            dateEmission: m.dateEmission,
-            dateArrivePrevue: m.dateArrivePrevue,
-            transportName: m.TransMaritime.nomNavire,
-            transportInfo: m.TransMaritime,
-          }));
-
-        setMasters([...airData, ...seaData].sort((a, b) => new Date(a.dateEmission).getTime() - new Date(b.dateEmission).getTime()));
-      } catch (error) {
-        console.error("Erreur de chargement :", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchMasters();
   }, []);
 
   const getTransportIcon = (type: "MAWB" | "MBL") =>
     type === "MBL" ? <FaShip className="text-blue-600 w-4 h-4" /> : <FaPlane className="text-teal-600 w-4 h-4" />;
 
+  const handleDelete = (master: Master) => {
+    setMasterToDelete(master);
+    setIsDeleteModalOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!masterToDelete) return;
+    try {
+      await api.delete(masterToDelete.type === "MAWB" ? `/mawb/${masterToDelete.id}` : `/mbl/${masterToDelete.id}`);
+      setIsDeleteModalOpen(false);
+      setMasterToDelete(null);
+      fetchMasters();
+    } catch (error) {
+      console.error("Erreur de suppression :", error);
+    }
+  };
+
+
   if (loading) return <div className="p-4">Chargement des données...</div>;
-  
-const filteredData = masters.filter(
+
+  const filteredData = masters.filter(
     (item) =>
       item.numero?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       item.transportName?.toLowerCase().includes(searchTerm.toLowerCase())
@@ -98,16 +120,16 @@ const filteredData = masters.filter(
     <>
       <div className="overflow-x-auto w-full">
         <div className="flex flex-col md:flex-row items-center md:space-x-4 space-y-2 md:space-y-0 w-full">
-                  <div className="relative flex-1 w-full">
-                    <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-5 w-5" />
-                    <Input
-                      placeholder="Rechercher document master..."
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      className="pl-10 w-full"
-                    />
-                  </div>
-                </div>
+          <div className="relative flex-1 w-full">
+            <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-5 w-5" />
+            <Input
+              placeholder="Rechercher document master..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10 w-full"
+            />
+          </div>
+        </div>
         <Table className="min-w-[700px] md:min-w-full">
           <TableHeader>
             <TableRow>
@@ -148,8 +170,16 @@ const filteredData = masters.filter(
                   <Button variant="ghost" size="sm" title="Voir détails" onClick={() => openModal(m)}>
                     <FaEye className="w-4 h-4" />
                   </Button>
-                  <Button variant="ghost" size="sm" title="Modifier"><FaEdit className="w-4 h-4" /></Button>
-                  <Button variant="ghost" size="sm" className="text-red-600 hover:text-red-700" title="Supprimer"><FaTrash className="w-4 h-4" /></Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    title="Modifier"
+                    onClick={() => onEditMaster(m)} // <-- ici
+                  >
+                    <FaEdit className="w-4 h-4" />
+                  </Button>
+
+                  <Button variant="ghost" onClick={() => handleDelete(m)} size="sm" className="text-red-600 hover:text-red-700" title="Supprimer"><FaTrash className="w-4 h-4" /></Button>
                 </TableCell>
               </TableRow>
             ))}
@@ -194,6 +224,14 @@ const filteredData = masters.filter(
           </div>
         </Modal>
       )}
+
+      <DeleteConfirmModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        onConfirm={confirmDelete}
+        clientName={masterToDelete?.numero || ""}
+      />
+
     </>
   );
 }

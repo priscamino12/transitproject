@@ -5,9 +5,12 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 
-type Props = { onSubmit: (data: any) => void }
+type Props = {
+  onSubmit: (data: any) => void  
+  onCancel: () => void;
+}
 
-export function HBLForm({ onSubmit }: Props) {
+export function HBLForm({ onSubmit, onCancel }: Props) {
   const [form, setForm] = useState({
     numHBL: "",
     idTransport: "",
@@ -44,7 +47,9 @@ export function HBLForm({ onSubmit }: Props) {
 
       <div className="md:col-span-2 flex justify-end space-x-4 mt-4">
         <Button type="submit" className="px-8">Créer HBL</Button>
-        <Button variant="outline" className="px-8" onClick={() => console.log("Annuler")}>Annuler</Button>
+        <Button variant="outline" className="px-8" type="button" onClick={onCancel}>
+          Annuler
+        </Button>
       </div>
     </form>
   )

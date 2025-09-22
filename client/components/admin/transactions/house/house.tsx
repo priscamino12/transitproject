@@ -23,11 +23,10 @@ type House = {
 };
 
 interface HousesTableProps {
-  searchTerm: string;
-  onEditHouse: (master: any) => void;
+    onEditHouse: (house: any) => void;
 }
 
-export function HouseTabs({onEditHouse, searchTerm}:HousesTableProps) {
+export function HouseTabs({ onEditHouse }: HousesTableProps) {
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [houseToDelete, setHouseToDelete] = useState<House | null>(null);
 
@@ -95,6 +94,7 @@ export function HouseTabs({onEditHouse, searchTerm}:HousesTableProps) {
     useEffect(() => {
         fetchHouses();
     }, []);
+
     const getTransportIcon = (type: "HAWB" | "HBL") =>
         type === "HBL" ? <FaShip className="text-blue-600 w-4 h-4" /> : <FaPlane className="text-teal-600 w-4 h-4" />;
     const handleDelete = (house: House) => {
@@ -165,7 +165,14 @@ export function HouseTabs({onEditHouse, searchTerm}:HousesTableProps) {
                                     <Button variant="ghost" size="sm" title="Voir détails" onClick={() => openModal(h)}>
                                         <FaEye className="w-4 h-4" />
                                     </Button>
-                                    <Button variant="ghost" size="sm" title="Modifier"><FaEdit className="w-4 h-4" /></Button>
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        title="Modifier"
+                                        onClick={() => onEditHouse(h)}
+                                    >
+                                        <FaEdit className="w-4 h-4" />
+                                    </Button>
                                     <Button
                                         variant="ghost"
                                         size="sm"

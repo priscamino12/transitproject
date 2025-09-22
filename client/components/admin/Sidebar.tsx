@@ -1,8 +1,8 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import Link from "next/link"
-import { usePathname } from "next/navigation"
+import { useState } from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import {
   FiHome,
   FiUsers,
@@ -16,30 +16,39 @@ import {
   FiChevronRight,
   FiNavigation,
   FiAnchor,
-} from "react-icons/fi"
-import { cn } from "@/lib/utils"
-import { useLanguage } from "@/contexts/LanguageContext"
+} from "react-icons/fi";
+import { cn } from "@/lib/utils";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface SidebarProps {
-  isOpen: boolean
-  onClose: () => void
+  isOpen: boolean;
+  onClose: () => void;
 }
 
 export function Sidebar({ isOpen, onClose }: SidebarProps) {
-  const pathname = usePathname()
-  const { t } = useLanguage()
-  const [expandedMenus, setExpandedMenus] = useState<string[]>(["transport"])
+  const pathname = usePathname();
+  const { t } = useLanguage();
+  const { user, logout } = useAuth();
+  const [expandedMenus, setExpandedMenus] = useState<string[]>(["transport"]);
+
+  const handleLogout = () => {
+    logout(); // supprime token / infos utilisateur
+    window.location.href = "/auth"; // redirige vers login
+  };
 
   const toggleMenu = (menu: string) => {
-    setExpandedMenus((prev) => (prev.includes(menu) ? prev.filter((m) => m !== menu) : [...prev, menu]))
-  }
+    setExpandedMenus((prev) =>
+      prev.includes(menu) ? prev.filter((m) => m !== menu) : [...prev, menu]
+    );
+  };
 
   const menuItems = [
     {
       id: "dashboard",
       label: t("dashboard"),
       icon: FiHome,
-      href: "/",
+      href: "/admin/dashboard",
     },
     {
       id: "clients",
@@ -47,12 +56,17 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
       icon: FiUsers,
       href: "/admin/clients",
     },
-    {
-      id: "employes",
-      label: t("employes"),
-      icon: FiUsers,
-      href: "/admin/employe",
-    },
+    // Affiche le menu "employes" seulement si c'est un administrateur
+    ...(user?.type === "Administrateur"
+      ? [
+          {
+            id: "employes",
+            label: t("employes"),
+            icon: FiUsers,
+            href: "/admin/employe",
+          },
+        ]
+      : []),
     {
       id: "transport",
       label: t("transport"),
@@ -91,7 +105,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
       icon: FiFolder,
       href: "/admin/documents",
     },
-  ]
+  ];
 
   const bottomMenuItems = [
     {
@@ -104,20 +118,18 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
       id: "logout",
       label: t("logout"),
       icon: FiLogOut,
-      href: "/admin/logout",
+      onClick: handleLogout,
     },
-  ]
+  ];
 
   return (
     <>
-      {/* Mobile overlay */}
       {isOpen && <div className="fixed inset-0 bg-black/50 z-40 lg:hidden" onClick={onClose} />}
 
-      {/* Sidebar */}
       <div
         className={cn(
           "fixed left-0 top-0 h-full w-64 bg-sidebar border-r border-sidebar-border z-50 transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:z-auto",
-          isOpen ? "translate-x-0" : "-translate-x-full",
+          isOpen ? "translate-x-0" : "-translate-x-full"
         )}
       >
         <div className="flex flex-col h-full">
@@ -144,7 +156,8 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                       onClick={() => toggleMenu(item.id)}
                       className={cn(
                         "w-full flex items-center justify-between px-3 py-2 rounded-lg text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors",
-                        pathname.startsWith(item.href) && "bg-sidebar-primary text-sidebar-primary-foreground",
+                        pathname.startsWith(item.href) &&
+                          "bg-sidebar-primary text-sidebar-primary-foreground"
                       )}
                     >
                       <div className="flex items-center space-x-3">
@@ -166,7 +179,8 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                             onClick={onClose}
                             className={cn(
                               "flex items-center space-x-3 px-3 py-2 rounded-lg text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors",
-                              pathname === subItem.href && "bg-sidebar-primary text-sidebar-primary-foreground",
+                              pathname === subItem.href &&
+                                "bg-sidebar-primary text-sidebar-primary-foreground"
                             )}
                           >
                             <subItem.icon className="w-4 h-4" />
@@ -182,7 +196,8 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                     onClick={onClose}
                     className={cn(
                       "flex items-center space-x-3 px-3 py-2 rounded-lg text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors",
-                      pathname === item.href && "bg-sidebar-primary text-sidebar-primary-foreground",
+                      pathname === item.href &&
+                        "bg-sidebar-primary text-sidebar-primary-foreground"
                     )}
                   >
                     <item.icon className="w-5 h-5" />
@@ -195,23 +210,41 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
 
           {/* Bottom menu */}
           <div className="p-4 border-t border-sidebar-border space-y-2">
-            {bottomMenuItems.map((item) => (
-              <Link
-                key={item.id}
-                href={item.href}
-                onClick={onClose}
-                className={cn(
-                  "flex items-center space-x-3 px-3 py-2 rounded-lg text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors",
-                  pathname === item.href && "bg-sidebar-primary text-sidebar-primary-foreground",
-                )}
-              >
-                <item.icon className="w-5 h-5" />
-                <span>{item.label}</span>
-              </Link>
-            ))}
+            {bottomMenuItems.map((item) =>
+              item.onClick ? (
+                <button
+                  key={item.id}
+                  onClick={() => {
+                    item.onClick?.();
+                    onClose();
+                  }}
+                  className={cn(
+                    "flex items-center space-x-3 px-3 py-2 w-full rounded-lg text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors",
+                    pathname === item.href && "bg-sidebar-primary text-sidebar-primary-foreground"
+                  )}
+                >
+                  <item.icon className="w-5 h-5" />
+                  <span>{item.label}</span>
+                </button>
+              ) : (
+                <Link
+                  key={item.id}
+                  href={item.href!}
+                  onClick={onClose}
+                  className={cn(
+                    "flex items-center space-x-3 px-3 py-2 rounded-lg text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors",
+                    pathname === item.href &&
+                      "bg-sidebar-primary text-sidebar-primary-foreground"
+                  )}
+                >
+                  <item.icon className="w-5 h-5" />
+                  <span>{item.label}</span>
+                </Link>
+              )
+            )}
           </div>
         </div>
       </div>
     </>
-  )
+  );
 }

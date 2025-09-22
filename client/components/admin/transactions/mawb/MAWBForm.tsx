@@ -1,40 +1,55 @@
-"use client"
+"use client";
 
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import api from "@/app/axiosInstance"; 
-import { jwtDecode } from 'jwt-decode';
+import api from "@/app/axiosInstance";
 
-type Props = { onSubmit: (data: any) => void };
+type Props = {
+  onSubmit: (data: any) => void;
+  initialData?: any;
+  onCancel: () => void;
+};
 
-export function MAWBForm({ onSubmit }: Props) {
+export function MAWBForm({ onSubmit, initialData, onCancel }: Props) {
+  const formatDate = (dateStr?: string) => dateStr ? dateStr.split("T")[0] : "";
+  
   const [form, setForm] = useState({
-    numMAWB: "",
-    idTransport: "",
-    dateEmission: "",
-    dateArrivePrevue: "",
-    creerPar: "",
+    numMAWB: initialData?.numero || "",
+    idTransport: initialData?.transportInfo?.idTransAerienne || "",
+    dateEmission: formatDate(initialData?.dateEmission),
+    dateArrivePrevue: formatDate(initialData?.dateArrivePrevue),
   });
-    const token = localStorage.getItem("token");
-if (token) {
-  const decoded: any = jwtDecode(token);
-  console.log("Contenu du token :", decoded);
-}
 
   const [transports, setTransports] = useState<{ idTransAerienne: number; nomCompagnie: string; numVol: string }[]>([]);
 
-  // Récupérer les transports existants depuis l'API
+useEffect(() => {
+  if (initialData) {
+    setForm({
+      numMAWB: initialData.numero,
+      idTransport: initialData.transportInfo?.idTransAerienne || "",
+      dateEmission: formatDate(initialData.dateEmission),
+      dateArrivePrevue: formatDate(initialData.dateArrivePrevue),
+    });
+  } else {
+    setForm({
+      numMAWB: "",
+      idTransport: "",
+      dateEmission: "",
+      dateArrivePrevue: "",
+    });
+  }
+}, [initialData]);
+
   useEffect(() => {
     const fetchTransports = async () => {
       try {
         const res = await api.get("/transAerienne/");
-        setTransports(res.data); // Assure-toi que ton backend renvoie un tableau
+        setTransports(res.data);
       } catch (err) {
         console.error("Erreur lors du chargement des transports :", err);
       }
     };
-
     fetchTransports();
   }, []);
 
@@ -49,8 +64,7 @@ if (token) {
   return (
     <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6">
       <Field label="Numéro MAWB" value={form.numMAWB} onChange={(v) => handleChange("numMAWB", v)} />
-      
-      {/* Champ select pour les transports */}
+
       <div className="flex flex-col">
         <Label className="mb-1 text-card-foreground">Transport Aérien</Label>
         <select
@@ -72,14 +86,18 @@ if (token) {
       <Field label="Date Arrivée Prévue" type="date" value={form.dateArrivePrevue} onChange={(v) => handleChange("dateArrivePrevue", v)} />
 
       <div className="md:col-span-2 flex justify-end space-x-4 mt-4">
-        <Button type="submit" className="px-8">Créer MAWB</Button>
-        <Button variant="outline" className="px-8" onClick={() => console.log("Annuler")}>Annuler</Button>
+        <Button type="submit" className="px-8">
+          {initialData ? "Modifier MAWB" : "Créer MAWB"}
+        </Button>
+
+       <Button variant="outline" className="px-8" type="button" onClick={onCancel}>
+          Annuler
+        </Button>
       </div>
     </form>
   );
 }
 
-// Champ texte générique
 function Field({ label, value, onChange, type = "text" }: { label: string; value: string; onChange: (v: string) => void; type?: string }) {
   return (
     <div className="flex flex-col">

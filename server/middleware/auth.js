@@ -1,19 +1,19 @@
-const jwt = require("jsonwebtoken");
+const jwt = require('jsonwebtoken');
 
-function authMiddleware(req, res, next) {
-  const authHeader = req.headers["authorization"];
-  if (!authHeader) return res.status(401).json({ error: "Token manquant" });
+module.exports = function (req, res, next) {
+  const authHeader = req.headers.authorization;
 
-  const token = authHeader.split(" ")[1];
-  if (!token) return res.status(401).json({ error: "Token invalide" });
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ error: 'Token manquant ou invalide' });
+  }
+
+  const token = authHeader.split(' ')[1];
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || "secret_key");
-    req.user = decoded; // tu pourras récupérer req.user.id ou req.user.role
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    req.user = decoded; // Ajouter les infos du user décodé à req
     next();
   } catch (err) {
-    res.status(401).json({ error: "Token invalide" });
+    return res.status(401).json({ error: 'Token invalide' });
   }
-}
-
-module.exports = authMiddleware;
+};

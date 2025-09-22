@@ -8,8 +8,14 @@ class HAWBRepository {
   async create(Data) {
     return await HAWB.create(Data);
   }
-  async findById(id) {
-    return await HAWB.findByPk(id);
+ async findById(id) {
+    return await HAWB.findByPk(id, {
+      include: [
+        { model: MAWB, attributes: ["idMAWB", "numMAWB"], required: true },
+        { model: Client, as: "clientExp", attributes: ["idClient", "nomClient"], required: true },
+        { model: Client, as: "clientDest", attributes: ["idClient", "nomClient"], required: true },
+      ],
+    });
   }
   async findAll() {
     return await HAWB.findAll({
@@ -115,38 +121,21 @@ class HAWBRepository {
       ],
     });
   }
-  async findByNum(num) {
+async findByNum(num) {
     return await HAWB.findOne({
-      where: {
-        numHAWB: num,
-      },
+      where: { numHAWB: num },
       include: [
-        {
-          model: MAWB,
-          attributes: ["numMAWB"],
-          required: true, // pour forcer la jointure
-        },
-        {
-          model: Client,
-          as: "clientExp", // alias pour l'agent expéditeur
-          attributes: ["nomClient"],
-          required: true, // pour forcer la jointure
-        },
-        {
-          model: Client,
-          as: "clientDest", // alias pour l'agent destinataire
-          attributes: ["nomClient"],
-          required: true, // pour forcer la jointure
-        },
+        { model: MAWB, attributes: ["idMAWB", "numMAWB"], required: true },
+        { model: Client, as: "clientExp", attributes: ["idClient", "nomClient"], required: true },
+        { model: Client, as: "clientDest", attributes: ["idClient", "nomClient"], required: true },
       ],
     });
   }
   async update(id, HAWBData) {
     const hAWB = await this.findById(id);
-    if (hAWB) {
-      return await HAWB.update(HAWBData, { where: { idHAWB: id } });
-    }
-    return null;
+    if (!hAWB) return null;
+    await HAWB.update(HAWBData, { where: { idHAWB: id } });
+    return this.findById(id);
   }
   async delete(id) {
     const hAWB = await this.findById(id);

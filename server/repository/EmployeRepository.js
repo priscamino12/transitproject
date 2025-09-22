@@ -12,7 +12,7 @@ class EmployeRepository  {
     return await Employe.findOne({ where: { emailEmploye: email } });
   }
   async findByEmailAndId(email, id) {
-    return await Employe.findOne({ where: { emailEmploye: email ,idEmployer:id} });
+    return await Employe.findOne({ where: { emailEmploye: email ,idEmploye:id} });
   }
   async findAll() {
     return await Employe.findAll();
@@ -44,7 +44,7 @@ async resetNewPassword(email, pwd){
   async delete(id) {
     const employe = await this.findById(id);
     if (employe) {
-      return await employe.destroy({where: { idEmployer: id }});
+      return await employe.destroy({where: { idEmploye: id }});
     }
     return null;
   }

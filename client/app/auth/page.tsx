@@ -38,10 +38,10 @@ export default function AuthPage() {
 
 
               <Image
-                src="/transit.jpg"   // chemin depuis public
+                src="/transit.jpg"
                 alt="Primex Logistics"
-                width={20000}          // largeur souhaitée
-                height={400}         // hauteur souhaitée
+                width={2000}          
+                height={400}         
                 className="mt-10 mx-auto md:mx-0 drop-shadow-lg"
               />
 

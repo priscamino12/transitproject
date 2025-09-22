@@ -1,28 +1,34 @@
+const ConteneurReposotory = require("../repository/ConteneurRepository");
+const repositoryConteneur = new ConteneurReposotory();
+
 class HouseController {
     constructor(HouseService) {
       this.HouseService = HouseService;
     }
-    async createHouseTransaction(req, res) {
-      try {
-        const HouseTransaction = await this.HouseService.createHouseTransaction(
-          req.body
-        );
-        res.status(201).json(HouseTransaction);
-      } catch (error) {
-        if (error.name === "SequelizeUniqueConstraintError") {
-            // Gérer l'erreur d'unicité
-            res.status(400).json({
-              error:
-                error.errors[0].message || "Une valeur unique est déjà présente.",
-            });
-          } else if (error.message) {
-            res.status(401).json({ error: error.message });
-          } else {
-            // Erreur interne serveur
-            res.status(500).json({ error: "Erreur lors de la creation du House" });
-          }
+
+ async createHouseTransaction(req, res) {
+  try {
+    const House = await this.HouseService.createHouseTransaction(req.body);
+      if (req.body.conteneur) {
+        const conteneur = req.body.conteneur;
+        for (const c of conteneur) {
+          await repositoryConteneur.create(c);
+        }
       }
+    res.status(201).json(House);
+  } catch (error) {
+    console.error("Erreur HAWB:", error); // <-- ajoute cette ligne
+    if (error.name === "SequelizeUniqueConstraintError") {
+      res.status(400).json({ error: error.errors[0].message });
+    } else if (error.message) {
+      res.status(401).json({ error: error.message });
+    } else {
+      res.status(500).json({ error: "Erreur lors de la creation du House" });
     }
+  }
+}
+
+
     async getOneHouseTransaction(req, res) {
       try {
         const HouseTransaction = await this.HouseService.getHouseTransactionById(
