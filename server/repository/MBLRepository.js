@@ -1,21 +1,39 @@
 const MBL = require("../models/MBL");
 const TransMaritime = require("../models/TransMaritime");
 
-class MBLRepository  {
+class MBLRepository {
   async create(TransactionData) {
     return await MBL.create(TransactionData);
   }
+
   async countAll() {
     return await MBL.count();
   }
+
   async findById(id) {
-    return await MBL.findByPk(id);
+    return await MBL.findByPk(id, {
+      include: [
+        {
+          model: TransMaritime,
+          attributes: [
+            'idTransMaritime',
+            'numIMO',
+            'armateur',
+            'nomNavire',
+            'dateChargement',
+            'villeChargement',
+            'paysChargement',
+            'paysDechargement',
+            'villeDechargement',
+          ],
+        }
+      ],
+    });
   }
+
   async getById(id) {
-    return await MBL.findOne( {
-      where:{
-        idMBL : id
-      },
+    return await MBL.findOne({
+      where: { idMBL: id },
       attributes: [
         'idMBL',
         'numMBL',
@@ -36,48 +54,53 @@ class MBLRepository  {
             'paysDechargement',
             'villeDechargement'
           ],
-          required: true, // pour forcer la jointure
+          required: true,
         }
       ],
-    })  
+    });
   }
+
   async findByMere(mbl) {
     return await MBL.findOne({ where: { numMBL: mbl } });
   }
+
   async findAll() {
-    return await MBL.findAll(
-      {
-        attributes: [ 
-          'idMBL',
-          'numMBL',
-          'dateEmission',
-          'dateArrivePrevue',
-        ],
-        include: [
-          {
-            model: TransMaritime,
-            attributes: [
-              "idTransMaritime",
-              'numIMO',
-              'armateur',
-              'nomNavire',
-              'dateChargement',
-              'paysChargement',
-              'paysDechargement',
-            ],
-            required: true, // pour forcer la jointure
-          }
-        ],
-      }
-    );
+    return await MBL.findAll({
+      attributes: [
+        'idMBL',
+        'numMBL',
+        'dateEmission',
+        'dateArrivePrevue',
+      ],
+      include: [
+        {
+          model: TransMaritime,
+          attributes: [
+            'idTransMaritime',
+            'numIMO',
+            'armateur',
+            'nomNavire',
+            'dateChargement',
+            'villeChargement',
+            'paysChargement',
+            'paysDechargement',
+            'villeDechargement',
+          ],
+          required: true,
+        }
+      ],
+    });
   }
+
   async update(id, TransactionData) {
     const transaction = await this.findById(id);
     if (transaction) {
-      return await MBL.update(TransactionData,{where: { idMBL: id }});
+      await MBL.update(TransactionData, { where: { idMBL: id } });
+      return this.findById(id); // retourne l'objet mis à jour
     }
     return null;
   }
+
   async delete(id) {
     const transaction = await this.findById(id);
     if (transaction) {

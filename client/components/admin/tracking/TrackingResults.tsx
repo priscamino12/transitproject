@@ -6,7 +6,6 @@ import { Progress } from "@/components/ui/progress"
 import {
   FiMapPin,
   FiCalendar,
-  FiWeight,
   FiUser,
   FiCheckCircle,
   FiClock,
@@ -88,15 +87,6 @@ export function TrackingResults({ tracking }: TrackingResultsProps) {
                 <p className="font-medium">{tracking.client}</p>
               </div>
             </div>
-
-            <div className="flex items-center space-x-3">
-              <FiWeight className="w-5 h-5 text-muted-foreground" />
-              <div>
-                <p className="text-sm text-muted-foreground">Poids</p>
-                <p className="font-medium">{tracking.weight}</p>
-              </div>
-            </div>
-
             <div className="flex items-center space-x-3">
               <FiMapPin className="w-5 h-5 text-muted-foreground" />
               <div>

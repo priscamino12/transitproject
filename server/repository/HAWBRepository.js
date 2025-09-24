@@ -2,13 +2,14 @@ const MAWB = require("../models/MAWB");
 const HAWB = require("../models/HAWB");
 const Client = require("../models/Client");
 const sequelize = require('../config/database')
-const { fn, col, where,Sequelize } = require("sequelize");
+const { fn, col, where, Sequelize } = require("sequelize");
+const TransAerienne = require("../models/TransAerienne");
 
 class HAWBRepository {
   async create(Data) {
     return await HAWB.create(Data);
   }
- async findById(id) {
+  async findById(id) {
     return await HAWB.findByPk(id, {
       include: [
         { model: MAWB, attributes: ["idMAWB", "numMAWB"], required: true },
@@ -33,7 +34,21 @@ class HAWBRepository {
         {
           model: MAWB,
           attributes: ["idMAWB", "numMAWB"],
-          required: true, // pour forcer la jointure
+          required: true,
+          include: [
+            {
+              model: TransAerienne,
+              attributes: [
+                "idTransAerienne",
+                "numVol",
+                "nomCompagnie",
+                "dateChargement",
+                "paysChargement",
+                "villeChargement",
+                "paysDechargement", "villeDechargement"],
+              required: true,
+            }
+          ]
         },
         {
           model: Client,
@@ -121,7 +136,7 @@ class HAWBRepository {
       ],
     });
   }
-async findByNum(num) {
+  async findByNum(num) {
     return await HAWB.findOne({
       where: { numHAWB: num },
       include: [

@@ -3,14 +3,39 @@ const MBL = require("../models/MBL");
 const Client = require("../models/Client");
 const sequelize = require("../config/database");
 const { fn, col, Sequelize } = require("sequelize");
+const TransMaritime = require("../models/TransMaritime");
 
 class HBLRepository {
   async create(Data) {
     return await HBL.create(Data);
   }
   async findById(id) {
-    return await HBL.findByPk(id);
+    return await HBL.findByPk(id, {
+      include: [
+        {
+          model: MBL,
+          attributes: ["numMBL", "dateEmission", "dateArrivePrevue"],
+          include: [
+            {
+              model: TransMaritime,
+              attributes: [
+                "numIMO",
+                "armateur",
+                "numIMO",
+                "villeChargement",
+                "paysChargement",
+                "villeDechargement",
+                "paysDechargement"
+              ]
+            }
+          ]
+        },
+        { model: Client, as: "clientExp", attributes: ["nomClient", "adresseClient", "telClient"] },
+        { model: Client, as: "clientDest", attributes: ["nomClient",  "adresseClient", "telClient"] }
+      ]
+    });
   }
+
   async countAll() {
     return await HBL.count();
   }
@@ -52,7 +77,23 @@ class HBLRepository {
         {
           model: MBL,
           attributes: ["idMBL", "numMBL"],
-          required: true, // pour forcer la jointure
+          required: true,
+          include: [
+            {
+              model: TransMaritime,
+              attributes: [
+                "idTransMaritime",
+                "numIMO",
+                "armateur",
+                "nomNavire",
+                "dateChargement",
+                "paysChargement",
+                "villeChargement",
+                "paysDechargement",
+                "villeDechargement"],
+              required: true,
+            }
+          ]
         },
         {
           model: Client,
@@ -87,8 +128,24 @@ class HBLRepository {
       include: [
         {
           model: MBL,
-          attributes: ["numMBL"],
+          attributes: ["idMBL, numMBL"],
           required: true,
+          include: [
+            {
+              model: TransMaritime,
+              attributes: [
+                "idTransMaritime",
+                "numIMO",
+                "armateur",
+                "nomNavire",
+                "dateChargement",
+                "paysChargement",
+                "villeChargement",
+                "paysDechargement",
+                "villeDechargement"],
+              required: true,
+            }
+          ]
         },
         {
           model: Client,

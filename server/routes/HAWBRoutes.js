@@ -20,6 +20,8 @@ router.get('/tot/:id', (req, res) => houseTransactionController.getTotalColisMer
 router.get('/count/all/', (req, res) => houseTransactionController.getCountAllHouseTransactions(req, res));
 router.get('/count/onYear/', (req, res) => houseTransactionController.getCountAllOnYearHouseTransactions(req, res));
 router.get('/count/byMonth/', (req, res) => houseTransactionController.getAllByMonthHouseTransactions(req, res));
+router.get('/:id/facture', (req, res) =>
+  houseTransactionController.generateInvoice(req, res));
 
 
 module.exports = router;

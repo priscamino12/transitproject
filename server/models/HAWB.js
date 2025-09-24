@@ -17,7 +17,7 @@ HAWB.init(
       type: DataTypes.STRING,
       allowNull: false,
       unique: {
-        msg: "Ce numéro HAWB est déjà utilisée.",
+        msg: "Ce numéro HAWB est déjà utilisé.",
       },
     },
     nbColis: {
@@ -96,14 +96,15 @@ HAWB.init(
     modelName: "HAWB",
     timestamps: true,
     validate: {
-      expediteurDifferentDeDestinateur() {
-        if (this.idExpediteur === this.idDestinateur) {
-          throw new Error("idExpediteur doit être différent de idDestinateur.");
+      expediteurDifferentDeDestinataire() {
+        if (this.idExpediteur === this.idDestinataire) {
+          throw new Error("idExpediteur doit être différent de idDestinataire.");
         }
       },
     },
   }
 );
+
 HAWB.belongsTo(Client, { as: "clientExp", foreignKey: "idExpediteur" });
 HAWB.belongsTo(Client, { as: "clientDest", foreignKey: "idDestinataire" });
 HAWB.belongsTo(MAWB, { foreignKey: "idMAWB" });
