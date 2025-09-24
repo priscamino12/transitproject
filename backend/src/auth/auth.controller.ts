@@ -13,17 +13,18 @@ export class AuthController {
         @Body() body: { email: string; password: string },
         @Res() res: Response,
     ) {
-        const token = await this.authService.authenticate(body.email, body.password);
+
+        const { user, token } = await this.authService.authenticate(body.email, body.password);
 
         // Placer le token dans un cookie HttpOnly
         res.cookie('jwt', token, {
             httpOnly: true, // 🔒 empêche l’accès depuis JS côté client
             secure: process.env.NODE_ENV === 'production', // 🔒 seulement HTTPS en prod
             sameSite: 'strict', // 🔒 protège contre CSRF basique
-            maxAge: 1000 * 60 * 60 * 24 * 30, // 30 jours
+            maxAge: 1000 * 60 * 60 * 24 * 30, // 30 jours 
         });
 
-        return res.send({ message: 'Connexion réussie' });
+        return res.send({ message: 'Connexion réussie', data: user });
 
     }
 

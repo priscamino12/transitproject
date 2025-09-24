@@ -52,10 +52,11 @@ describe('AuthService', () => {
       emailEmploye: email,
       motDePasse: hashedPassword,
       typeEmploye: 'Employe',
+      nomEmploye: 'Test Employe', // Ajouter nomEmploye
     };
     const token = 'jwt_token';
 
-    it('should return a JWT token when credentials are valid', async () => {
+    it('should return a JWT token and user info when credentials are valid', async () => {
       mockPrismaService.employe.findUnique.mockResolvedValue(employe);
       (bcrypt.compare as jest.Mock).mockResolvedValue(true);
       mockJwtService.sign.mockReturnValue(token);
@@ -71,7 +72,14 @@ describe('AuthService', () => {
         email: employe.emailEmploye,
         role: employe.typeEmploye,
       });
-      expect(result).toBe(token); // Attendre une chaîne au lieu d'un objet
+      expect(result).toEqual({
+        user: {
+          email: employe.emailEmploye,
+          role: employe.typeEmploye,
+          nom: employe.nomEmploye,
+        },
+        token,
+      });
     });
 
     it('should throw UnauthorizedException if user is not found', async () => {

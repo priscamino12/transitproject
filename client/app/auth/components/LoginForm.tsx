@@ -6,6 +6,7 @@ import { jwtDecode } from "jwt-decode";
 import api from "@/app/axiosInstance";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { useRouter } from "next/navigation";
 
 interface Props {
   onForgot: () => void;
@@ -15,21 +16,16 @@ export default function LoginForm({ onForgot }: Props) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [show, setShow] = useState(false);
-
+const router = useRouter()
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     try {
-      const res = await api.post("/employe/login", { email, password });
+      const res = await api.post("/auth/login", { email, password });
 
       if (res.status === 200) {
-        const token = res.data.token;
-
-        localStorage.setItem("token", token);
-        const decoded: any = jwtDecode(token);
-        localStorage.setItem("userName", decoded.nom);
-        localStorage.setItem("userType", decoded.type);
-
+        const user = res.data.data
+        localStorage.setItem("user", JSON.stringify(user))
         toast.success("Connexion réussie !", {
           position: "top-right",
           autoClose: 2000,
@@ -37,7 +33,8 @@ export default function LoginForm({ onForgot }: Props) {
 
         // Redirection après un petit délai pour que l'utilisateur voit le toast
         setTimeout(() => {
-          window.location.href = "/admin/dashboard";
+          router.push("/admin/dashboard")
+          // window.location.href = "/admin/dashboard";
         }, 500);
       }
     } catch (err: any) {
@@ -62,7 +59,7 @@ export default function LoginForm({ onForgot }: Props) {
         className="space-y-8 max-w-lg mx-auto w-full"
       >
         <h2 className="text-3xl font-bold text-blue-600 text-center mb-6">
-          Connexion
+          Connexion test
         </h2>
 
         <div className="relative">

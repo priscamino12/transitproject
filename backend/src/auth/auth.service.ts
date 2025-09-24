@@ -9,7 +9,7 @@ export class AuthService {
   constructor(
     private prisma: PrismaService,
     private jwtService: JwtService,
-  ) {}
+  ) { }
 
   // Authentification : Vérifie les identifiants et renvoie un token JWT
   async authenticate(email: string, password: string) {
@@ -17,7 +17,7 @@ export class AuthService {
       where: { emailEmploye: email },
     });
 
-    if (!employe) {      
+    if (!employe) {
       throw new UnauthorizedException('Identifiants invalides.');
     }
 
@@ -25,10 +25,16 @@ export class AuthService {
     if (!isPasswordValid) {
       throw new UnauthorizedException('Identifiants invalides.');
     }
-
     const payload = { sub: employe.idEmploye, email: employe.emailEmploye, role: employe.typeEmploye };
-    return this.jwtService.sign(payload);
+    const token = this.jwtService.sign(payload);
+    // Renvoie à la fois token et info user
+    const user = {
+      email: employe.emailEmploye,
+      role: employe.typeEmploye,
+      nom: employe.nomEmploye,
+    };
 
+    return { user, token };
   }
 
   // Mot de passe oublié : Génère un code temporaire et l'envoie par e-mail
