@@ -1,0 +1,236 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+}
+model Employe {
+  idEmploye     Int       @id @default(autoincrement())
+  nomEmploye    String
+  emailEmploye  String    @unique
+  motDePasse    String
+  typeEmploye   String    @default("Employe") // Enum simulé
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  mawbsCreated  MAWB[]    @relation("Creator")
+  mawbsModified MAWB[]    @relation("Modifier")
+  hblsCreated   HBL[]     @relation("Creator")
+  hblsModified  HBL[]     @relation("Modifier")
+  hawbsCreated  HAWB[]    @relation("Creator")
+  hawbsModified HAWB[]    @relation("Modifier")
+  mblsCreated   MBL[]     @relation("Creator")
+  mblsModified  MBL[]     @relation("Modifier")
+  transMaritimeCreated TransMaritime[] @relation("Creator")
+  transMaritimeModified TransMaritime[] @relation("Modifier")
+  transAerienneCreated TransAerienne[] @relation("Creator")
+  transAerienneModified TransAerienne[] @relation("Modifier")
+  clientCreated Client[]  @relation("Creator")
+  clientModified Client[]  @relation("Modifier")
+
+  codeTemp       String?   // Champ optionnel pour le code temporaire
+  codeTempExpires DateTime? // Date d'expiration du code temporaire
+
+  @@map("employe")
+}
+
+model Client {
+  idClient      Int       @id @default(autoincrement())
+  nomClient     String
+  emailClient   String    @unique
+  telClient     String?   @unique
+  adresseClient String?
+  CINClient     String    @unique
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  creerPar         Int
+  creator          Employe          @relation("Creator", fields: [creerPar], references: [idEmploye], onDelete: Cascade, onUpdate: Cascade)
+  modifierPar      Int?
+  modifier         Employe?         @relation("Modifier", fields: [modifierPar], references: [idEmploye], onDelete: Cascade, onUpdate: Cascade)
+  expediteurHAWB HAWB[]   @relation("Expediteur")
+  destinataireHAWB HAWB[] @relation("Destinataire")
+  expediteurHBL HBL[]    @relation("Expediteur")
+  destinataireHBL HBL[]  @relation("Destinataire")
+
+  @@map("client")
+}
+
+model TransAerienne {
+  idTransAerienne  Int       @id @default(autoincrement())
+  numVol           String    @unique
+  nomCompagnie     String
+  dateChargement   DateTime
+  paysChargement   String
+  villeChargement  String
+  paysDechargement String
+  villeDechargement String?
+  creerPar         Int
+  creator          Employe   @relation("Creator", fields: [creerPar], references: [idEmploye], onDelete: Cascade, onUpdate: Cascade)
+  modifierPar      Int?
+  modifier         Employe?  @relation("Modifier", fields: [modifierPar], references: [idEmploye], onDelete: Cascade, onUpdate: Cascade)
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  mawbs            MAWB[]
+  @@map("trans_aerienne")
+}
+
+
+model TransMaritime {
+  idTransMaritime  Int       @id @default(autoincrement())
+  numIMO           String    @unique
+  armateur         String
+  nomNavire        String
+  dateChargement   DateTime
+  paysChargement   String
+  villeChargement  String
+  paysDechargement String
+  villeDechargement String?
+  creerPar         Int
+  creator          Employe   @relation("Creator", fields: [creerPar], references: [idEmploye], onDelete: Cascade, onUpdate: Cascade)
+  modifierPar      Int?
+  modifier         Employe?  @relation("Modifier", fields: [modifierPar], references: [idEmploye], onDelete: Cascade, onUpdate: Cascade)
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  mbls             MBL[]
+  @@map("trans_maritime")
+
+}
+
+
+model MAWB {
+  idMAWB           Int              @id @default(autoincrement())
+  numMAWB          String           @unique
+  idTransport      Int
+  transport        TransAerienne    @relation(fields: [idTransport], references: [idTransAerienne], onDelete: Cascade, onUpdate: Cascade)
+  dateEmission     DateTime
+  dateArrivePrevue DateTime?
+  creerPar         Int
+  creator          Employe          @relation("Creator", fields: [creerPar], references: [idEmploye], onDelete: Cascade, onUpdate: Cascade)
+  modifierPar      Int?
+  modifier         Employe?         @relation("Modifier", fields: [modifierPar], references: [idEmploye], onDelete: Cascade, onUpdate: Cascade)
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+  hawbs            HAWB[]
+  @@map("mawb")
+
+}
+
+model MBL {
+  idMBL            Int              @id @default(autoincrement())
+  numMBL           String           @unique
+  idTransport      Int
+  transport        TransMaritime    @relation(fields: [idTransport], references: [idTransMaritime], onDelete: Cascade, onUpdate: Cascade)
+  dateEmission     DateTime
+  dateArrivePrevue DateTime
+  creerPar         Int
+  creator          Employe          @relation("Creator", fields: [creerPar], references: [idEmploye], onDelete: Cascade, onUpdate: Cascade)
+  modifierPar      Int?
+  modifier         Employe?         @relation("Modifier", fields: [modifierPar], references: [idEmploye], onDelete: Cascade, onUpdate: Cascade)
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+  conteneurs       Conteneur[]
+  hbls             HBL[]
+
+  @@map("mbl")
+  
+}
+
+model Conteneur {
+  idConteneur   Int       @id @default(autoincrement())
+  numConteneur  String
+  typeConteneur String
+  numPlomb      String
+  numMBL        String
+  mbl           MBL       @relation(fields: [numMBL], references: [numMBL], onDelete: Cascade, onUpdate: Cascade)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+   @@map("conteneur")
+
+}
+
+model HAWB {
+  idHAWB         Int       @id @default(autoincrement())
+  numHAWB        String    @unique
+  nbColis        Int
+  poid           Float
+  volume         Float
+  description    String
+  idMAWB         Int
+  mawb           MAWB      @relation(fields: [idMAWB], references: [idMAWB], onDelete: Cascade, onUpdate: Cascade)
+  dateEmission   DateTime
+  idExpediteur   Int
+  clientExp      Client    @relation("Expediteur", fields: [idExpediteur], references: [idClient], onDelete: Cascade, onUpdate: Cascade)
+  idDestinataire Int
+  clientDest     Client    @relation("Destinataire", fields: [idDestinataire], references: [idClient], onDelete: Cascade, onUpdate: Cascade)
+  creerPar       Int
+  creator        Employe   @relation("Creator", fields: [creerPar], references: [idEmploye], onDelete: Cascade, onUpdate: Cascade)
+  modifierPar    Int?
+  modifier       Employe?  @relation("Modifier", fields: [modifierPar], references: [idEmploye], onDelete: Cascade, onUpdate: Cascade)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  suiviHAWBs     SuiviHAWB[]
+  // Note : La validation idExpediteur != idDestinataire doit être gérée dans le code métier
+   @@map("hawb")
+
+}
+
+model HBL {
+  idHBL          Int       @id @default(autoincrement())
+  numHBL         String    @unique
+  nbColis        Int
+  poid           Float
+  volume         Float
+  description    String
+  idMBL          Int
+  mbl            MBL       @relation(fields: [idMBL], references: [idMBL], onDelete: Cascade, onUpdate: Cascade)
+  dateEmission   DateTime
+  idExpediteur   Int
+  clientExp      Client    @relation("Expediteur", fields: [idExpediteur], references: [idClient], onDelete: Cascade, onUpdate: Cascade)
+  idDestinataire Int
+  clientDest     Client    @relation("Destinataire", fields: [idDestinataire], references: [idClient], onDelete: Cascade, onUpdate: Cascade)
+  creerPar       Int
+  creator        Employe   @relation("Creator", fields: [creerPar], references: [idEmploye], onDelete: Cascade, onUpdate: Cascade)
+  modifierPar    Int?
+  modifier       Employe?  @relation("Modifier", fields: [modifierPar], references: [idEmploye], onDelete: Cascade, onUpdate: Cascade)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  suiviHBLs      SuiviHBL[]
+  // Note : La validation idExpediteur != idDestinataire doit être gérée dans le code métier
+   @@map("hbl")
+
+}
+
+model SuiviHAWB {
+  idSuiviHAWB Int       @id @default(autoincrement())
+  numHAWB     String
+  hawb        HAWB      @relation(fields: [numHAWB], references: [numHAWB], onDelete: Cascade, onUpdate: Cascade)
+  etape       String
+  dateEtape   DateTime
+  status      String
+  commentaire String?
+  creerPar    Int
+  modifierPar Int?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  @@unique([numHAWB, etape])
+
+  @@map("suivi_hawb")
+
+}
+
+model SuiviHBL {
+  idSuiviHBL Int       @id @default(autoincrement())
+  numHBL     String
+  hbl        HBL       @relation(fields: [numHBL], references: [numHBL], onDelete: Cascade, onUpdate: Cascade)
+  etape      String
+  dateEtape  DateTime
+  status     String
+  commentaire String?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  @@unique([numHBL, etape])
+  
+  @@map("suivi_hbl")
+
+}

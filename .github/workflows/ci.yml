@@ -1,0 +1,68 @@
+name: SaaS CI/CD
+
+on:
+  push:
+    branches: [ "main" ]   # déclenche CI/CD à chaque push sur main
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  # --- Build et test du backend NestJS ---
+  backend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "18"
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run tests (NestJS)
+        run: npm run test
+
+      # Optionnel : build
+      - name: Build backend
+        run: npm run build
+
+      # Déploiement automatique sur Render
+      - name: Deploy to Render
+        run: |
+          curl -X POST "$RENDER_DEPLOY_HOOK"
+
+  # --- Build et test du frontend Next.js ---
+  frontend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "18"
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run tests (Next.js)
+        run: npm run test
+
+      # Déploiement auto sur Vercel
+      - name: Deploy to Vercel
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          working-directory: ./frontend
