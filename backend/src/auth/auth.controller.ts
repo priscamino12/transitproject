@@ -14,17 +14,28 @@ export class AuthController {
         @Res() res: Response,
     ) {
 
-        const { user, token } = await this.authService.authenticate(body.email, body.password);
+        // const { user, token } = await this.authService.authenticate(body.email, body.password);
 
-        // Placer le token dans un cookie HttpOnly
+        const response = await this.authService.authenticate(body.email, body.password);
+
+        if (!response.success || !response.data) {
+            return res.status(401).json(response);
+        }
+
+        const { user, token } = response.data
+
         res.cookie('jwt', token, {
-            httpOnly: true, // 🔒 empêche l’accès depuis JS côté client
-            secure: process.env.NODE_ENV === 'production', // 🔒 seulement HTTPS en prod
-            sameSite: 'strict', // 🔒 protège contre CSRF basique
-            maxAge: 1000 * 60 * 60 * 24 * 30, // 30 jours 
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'strict',
+            maxAge: 1000 * 60 * 60 * 24 * 30, // 30 jours
         });
 
-        return res.send({ message: 'Connexion réussie', data: user });
+        return res.json({
+            success: response.success,
+            message: response.message,
+            data: user, // Retourner uniquement user dans data
+        });
 
     }
 
@@ -38,8 +49,16 @@ export class AuthController {
     @Post('forgot-password')
     @HttpCode(200)
     async forgotPassword(@Body() body: { email: string }) {
-        const { token } = await this.authService.forgotPwd(body.email);
-        return { token, message: 'Code d\'accès temporaire envoyé avec succès.' };
+        const response = await this.authService.forgotPwd(body.email);
+
+        if (!response.success || !response.data) {
+            return { message: response.message };
+        }
+
+        return {
+            token: response.data.token,
+            message: response.message,
+        };
     }
 
     @Post('reset-password')

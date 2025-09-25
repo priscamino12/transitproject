@@ -8,13 +8,14 @@ import { ClientModule } from './client/client.module';
 import { AuthModule } from './auth/auth.module';
 
 
+
 @Module({
   imports: [
     ConfigModule.forRoot({isGlobal: true,}),
     PrismaModule,
     EmployeModule,
     ClientModule,
-    AuthModule
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],

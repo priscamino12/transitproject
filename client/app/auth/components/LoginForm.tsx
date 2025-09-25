@@ -8,6 +8,7 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useRouter } from "next/navigation";
 
+
 interface Props {
   onForgot: () => void;
 }
@@ -16,41 +17,24 @@ export default function LoginForm({ onForgot }: Props) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [show, setShow] = useState(false);
-const router = useRouter()
+  const router = useRouter()
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
     try {
       const res = await api.post("/auth/login", { email, password });
-
       if (res.status === 200) {
         const user = res.data.data
         localStorage.setItem("user", JSON.stringify(user))
-        toast.success("Connexion réussie !", {
-          position: "top-right",
-          autoClose: 2000,
-        });
-
-        // Redirection après un petit délai pour que l'utilisateur voit le toast
-        setTimeout(() => {
-          router.push("/admin/dashboard")
-          // window.location.href = "/admin/dashboard";
-        }, 500);
+         router.push("/admin/dashboard");
       }
     } catch (err: any) {
-      console.error("Erreur de connexion :", err);
-      const message =
-        err.response?.data?.error ||
-        err.response?.data?.message ||
-        "Identifiants invalides";
-
+      const message = err.response?.data?.message?.message || err.response?.data?.error || "Identifiants invalides";
       toast.error(message, {
         position: "top-right",
         autoClose: 3000,
       });
     }
   };
-
   return (
     <>
       <ToastContainer />
