@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { FaEnvelope, FaLock, FaUser } from "react-icons/fa";
-import api from "@/app/axiosInstance";
+import api from "@/config/axiosInstance";
 
 interface Props {
   onSwitch: () => void;

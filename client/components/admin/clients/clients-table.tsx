@@ -4,37 +4,31 @@ import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { FaEdit, FaFilter, FaSearch, FaTrash } from "react-icons/fa";
+import { FaEdit, FaSearch, FaTrash } from "react-icons/fa";
 import { DeleteConfirmModal } from "./delete-confirm-modal";
-import api from "@/app/axiosInstance";
 import { Input } from "../../ui/input";
+import { Client } from "@/types/client";
+import { getClients, deleteClient } from "@/services/client.service";
 
 interface ClientsTableProps {
-  onEditClient: (client: any) => void;
+  onEditClient: (client: Client) => void;
 }
 
 export function ClientsTable({ onEditClient }: ClientsTableProps) {
-  const [clients, setClients] = useState<any[]>([]);
+  const [clients, setClients] = useState<Client[]>([]);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [clientToDelete, setClientToDelete] = useState<any | null>(null);
+  const [clientToDelete, setClientToDelete] = useState<Client | null>(null);
 
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
-  const allClient = async () => {
-    try {
-      const response = await api.get("/client/");
-      setClients(response.data);
-    } catch (error) {
-      console.error("Erreur lors de la récupération des clients :", error);
-    }
-  };
-
+  // Charger les clients
   useEffect(() => {
-    allClient();
+    getClients().then(setClients).catch(console.error);
   }, []);
 
+  // Filtrer
   const filteredData = clients.filter(
     (item) =>
       item.nomClient?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -49,18 +43,20 @@ export function ClientsTable({ onEditClient }: ClientsTableProps) {
 
   const handlePageChange = (pageNumber: number) => setCurrentPage(pageNumber);
 
-  const handleDelete = (client: any) => {
+  // Ouvrir la modal
+  const handleDeleteClick = (client: Client) => {
     setClientToDelete(client);
     setIsDeleteModalOpen(true);
   };
 
+  // Confirmer la suppression
   const confirmDelete = async () => {
     if (clientToDelete) {
       try {
-        await api.delete(`/client/${clientToDelete.idClient}`);
+        await deleteClient(clientToDelete.idClient);
+        setClients((prev) => prev.filter((c) => c.idClient !== clientToDelete.idClient));
         setIsDeleteModalOpen(false);
         setClientToDelete(null);
-        allClient();
       } catch (error) {
         console.error("Erreur de suppression :", error);
       }
@@ -73,6 +69,7 @@ export function ClientsTable({ onEditClient }: ClientsTableProps) {
         <CardTitle>Liste des Clients ({clients.length})</CardTitle>
       </CardHeader>
       <CardContent>
+        {/* Barre de recherche */}
         <div className="flex flex-col md:flex-row items-center md:space-x-4 space-y-2 md:space-y-0 w-full">
           <div className="relative flex-1 w-full">
             <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-5 w-5" />
@@ -85,10 +82,7 @@ export function ClientsTable({ onEditClient }: ClientsTableProps) {
           </div>
         </div>
 
-
-
-
-
+        {/* Tableau */}
         <Table>
           <TableHeader>
             <TableRow>
@@ -116,7 +110,7 @@ export function ClientsTable({ onEditClient }: ClientsTableProps) {
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => handleDelete(client)}
+                      onClick={() => handleDeleteClick(client)}
                       className="text-red-600 hover:text-red-700"
                     >
                       <FaTrash className="h-4 w-4" />
@@ -128,6 +122,7 @@ export function ClientsTable({ onEditClient }: ClientsTableProps) {
           </TableBody>
         </Table>
 
+        {/* Pagination */}
         <div className="mt-4 flex justify-center space-x-2">
           {Array.from({ length: totalPages }, (_, index) => (
             <Button
@@ -141,6 +136,7 @@ export function ClientsTable({ onEditClient }: ClientsTableProps) {
           ))}
         </div>
 
+        {/* Modal de confirmation */}
         <DeleteConfirmModal
           isOpen={isDeleteModalOpen}
           onClose={() => setIsDeleteModalOpen(false)}

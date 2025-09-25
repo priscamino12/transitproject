@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { FaEnvelope, FaLock, FaEye, FaEyeSlash } from "react-icons/fa";
 import { jwtDecode } from "jwt-decode";
-import api from "@/app/axiosInstance";
+import api from "@/config/axiosInstance";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 

@@ -1,4 +1,4 @@
-import api from "@/app/axiosInstance";
+import api from "@/config/axiosInstance";
 
 export async function apiRequest(path: string, method: "GET"|"POST"|"PUT"|"DELETE", data?: any) {
   const response = await api.request({

@@ -1,9 +1,9 @@
-"use client"
+"use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useEffect, useState } from "react";
 import { FaUsers, FaShippingFast, FaFileInvoice, FaChartLine, FaArrowUp, FaArrowDown } from "react-icons/fa";
-import api from "../../../app/axiosInstance";
+import { getTotalExpeditions, getExpeditionsOnYear } from "@/services/ashboardService";
 
 export function DashboardStats() {
   const [expedition, setExpedition] = useState(0);
@@ -11,34 +11,20 @@ export function DashboardStats() {
   const [expeditionAerienne, setExpeditionAerienne] = useState(0);
   const [expeditionOnYear, setExpeditionOnYear] = useState(0);
 
-  const countExpedition = async () => {
-    try {
-      const maritime = await api.get("/hbl/count/all/");
-      const aerienne = await api.get("/hawb/count/all/");
-      setExpedition(maritime.data + aerienne.data);
-    } catch (error) {
-      console.error("Erreur lors de la récupération des expéditions :", error);
-    }
-  };
-
-  const countExpeditionOnYear = async () => {
-    try {
-      const maritime = await api.get("/hbl/count/onYear/");
-      const aerienne = await api.get("/hawb/count/onYear/");
-      setExpeditionOnYear(maritime.data + aerienne.data);
-      setExpeditionAerienne(aerienne.data);
-      setExpeditionMaritime(maritime.data);
-    } catch (error) {
-      console.error("Erreur lors de la récupération des expéditions de l'année :", error);
-    }
-  };
-
   useEffect(() => {
-    countExpedition();
-    countExpeditionOnYear();
+    async function fetchStats() {
+      const total = await getTotalExpeditions();
+      setExpedition(total);
+
+      const { total: onYear, maritime, aerienne } = await getExpeditionsOnYear();
+      setExpeditionOnYear(onYear);
+      setExpeditionMaritime(maritime);
+      setExpeditionAerienne(aerienne);
+    }
+
+    fetchStats();
   }, []);
 
-  // ✅ Définir les statistiques ici
   const stats = [
     {
       title: "Total expéditions",
@@ -79,9 +65,7 @@ export function DashboardStats() {
       {stats.map((stat, index) => (
         <Card key={index}>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              {stat.title}
-            </CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">{stat.title}</CardTitle>
             <stat.icon className="h-4 w-4 text-primary" />
           </CardHeader>
           <CardContent>

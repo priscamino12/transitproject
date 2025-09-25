@@ -1,18 +1,20 @@
 "use client"
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { FaEdit, FaTrash, FaEye, FaPlane } from "react-icons/fa"
+import { FaEdit, FaTrash, FaPlane } from "react-icons/fa"
 import { useEffect, useState } from "react"
-import api from "@/app/axiosInstance"
 import { DeleteConfirmModal } from "@/components/admin/clients/delete-confirm-modal"
-
+import { transportAerienService } from "@/services/transportaerien.service"
+import { TransportAerien } from "@/types/transportaerien.interface"
 
 interface TransAerienTableProps {
-   searchTerm: string
-  onEditTransportAerien: (transportAerien: any) => void;
+  searchTerm: string
+  onEditTransportAerien: (transportAerien: TransportAerien) => void
 }
+
 const getStatusColor = (statut: string) => {
   switch (statut) {
     case "En vol":
@@ -27,30 +29,27 @@ const getStatusColor = (statut: string) => {
       return "bg-gray-500"
   }
 }
+
 export function AerienTable({ onEditTransportAerien, searchTerm }: TransAerienTableProps) {
+  const [transportAeriens, setTransportAeriens] = useState<TransportAerien[]>([])
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
+  const [transportAerienToDelete, setTransportAerienToDelete] = useState<TransportAerien | null>(null)
 
-
-  const [transportAeriens, setTransportAeriens] = useState<any[]>([]);
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [transportAerienToDelete, setTransportAerienToDelete] = useState<any | null>(null);
-
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10;
+  const [currentPage, setCurrentPage] = useState(1)
+  const itemsPerPage = 10
 
   const allTransAerienne = async () => {
     try {
-      const response = await api.get("/transAerienne/");
-      setTransportAeriens(response.data);
-      // console.log(response.data);
+      const data = await transportAerienService.getAll()
+      setTransportAeriens(data)
     } catch (error) {
-      console.error("Erreur de récuperation de données transport aérien", error);
+      console.error("Erreur de récuperation de données transport aérien", error)
     }
-  };
-
+  }
 
   useEffect(() => {
-    allTransAerienne();
-  }, []);
+    allTransAerienne()
+  }, [])
 
   const filteredData = transportAeriens.filter((item) =>
     [
@@ -66,36 +65,34 @@ export function AerienTable({ onEditTransportAerien, searchTerm }: TransAerienTa
       .some((field) => field.toLowerCase().includes(searchTerm.toLowerCase()))
   )
 
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentData = filteredData.slice(indexOfFirstItem, indexOfLastItem);
-  const totalPages = Math.ceil(filteredData.length / itemsPerPage);
-  const handlePageChange = (pageNumber: number) => setCurrentPage(pageNumber);
+  const indexOfLastItem = currentPage * itemsPerPage
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage
+  const currentData = filteredData.slice(indexOfFirstItem, indexOfLastItem)
+  const totalPages = Math.ceil(filteredData.length / itemsPerPage)
+  const handlePageChange = (pageNumber: number) => setCurrentPage(pageNumber)
 
-  const handleDelete = (transportAerien: any) => {
-    setTransportAerienToDelete(transportAerien);
-    setIsDeleteModalOpen(true);
-  };
+  const handleDelete = (transportAerien: TransportAerien) => {
+    setTransportAerienToDelete(transportAerien)
+    setIsDeleteModalOpen(true)
+  }
 
   const confirmDelete = async () => {
     if (transportAerienToDelete) {
       try {
-        await api.delete(`/transAerienne/${transportAerienToDelete.idTransAerienne}`);
-        setIsDeleteModalOpen(false);
-        setTransportAerienToDelete(null);
-        allTransAerienne();
+        await transportAerienService.delete(transportAerienToDelete.idTransAerienne)
+        setIsDeleteModalOpen(false)
+        setTransportAerienToDelete(null)
+        allTransAerienne()
       } catch (error) {
-        console.error("Erreur de suppression :", error);
+        console.error("Erreur de suppression :", error)
       }
     }
-  };
-
-
+  }
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Transport Aériennes ({transportAeriens.length})</CardTitle>
+        <CardTitle>Transports Aériens ({transportAeriens.length})</CardTitle>
       </CardHeader>
       <CardContent>
         <Table>
@@ -105,14 +102,14 @@ export function AerienTable({ onEditTransportAerien, searchTerm }: TransAerienTa
               <TableHead>Compagnie</TableHead>
               <TableHead>Date Chargement</TableHead>
               <TableHead>Chargement</TableHead>
-              <TableHead>Dechargement</TableHead>
+              <TableHead>Déchargement</TableHead>
               <TableHead>Statut</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {currentData.map((transportAerien) => (
-              <TableRow key={transportAerien.id}>
+              <TableRow key={transportAerien.idTransAerienne}>
                 <TableCell>
                   <div className="flex items-center space-x-3">
                     <div className="p-2 bg-primary/10 rounded-lg">
@@ -122,7 +119,7 @@ export function AerienTable({ onEditTransportAerien, searchTerm }: TransAerienTa
                   </div>
                 </TableCell>
                 <TableCell>
-                  <div className="font-medium">{transportAerien.nomCompagnie} </div>
+                  <div className="font-medium">{transportAerien.nomCompagnie}</div>
                 </TableCell>
                 <TableCell>
                   <div className="text-sm">{transportAerien.dateChargement}</div>
@@ -139,7 +136,6 @@ export function AerienTable({ onEditTransportAerien, searchTerm }: TransAerienTa
                     <div className="text-sm text-muted-foreground">Ville: {transportAerien.villeDechargement}</div>
                   </div>
                 </TableCell>
-
                 <TableCell>
                   <Badge className={getStatusColor(transportAerien.statut)}>{transportAerien.statut}</Badge>
                 </TableCell>
@@ -182,8 +178,6 @@ export function AerienTable({ onEditTransportAerien, searchTerm }: TransAerienTa
           onConfirm={confirmDelete}
           clientName={transportAerienToDelete?.nomCompagnie || ""}
         />
-
-
       </CardContent>
     </Card>
   )

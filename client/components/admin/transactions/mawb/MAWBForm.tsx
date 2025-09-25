@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import api from "@/app/axiosInstance";
+import api from "@/config/axiosInstance";
 
 type Props = {
   onSubmit: (data: any) => void;

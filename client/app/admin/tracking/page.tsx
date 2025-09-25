@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { FiPackage, FiSearch, FiPlus } from "react-icons/fi"
-import api from "@/app/axiosInstance"
+import api from "@/config/axiosInstance"
 import { TrackingForm } from "@/components/admin/tracking/TrackingForm"
 import { TrackingResults } from "@/components/admin/tracking/TrackingResults"
 

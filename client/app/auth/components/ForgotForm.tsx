@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { FaEnvelope, FaLock } from "react-icons/fa";
-import api from "@/app/axiosInstance";
+import api from "@/config/axiosInstance";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 

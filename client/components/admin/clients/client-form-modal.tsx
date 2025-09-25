@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { FiArrowLeft, FiSave, FiX } from "react-icons/fi"
-import api from "@/app/axiosInstance"
+import api from "@/config/axiosInstance"
 import Swal from "sweetalert2"
 
 interface ClientFormProps {

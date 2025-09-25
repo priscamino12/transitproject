@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { FaEnvelope, FaLock, FaEye, FaRegEyeSlash, FaCheckCircle, FaFacebookF, FaGoogle, FaLinkedinIn, FaTwitter } from "react-icons/fa";
 import { useRouter } from "next/navigation";
-import api from "@/app/axiosInstance";
+import api from "@/config/axiosInstance";
 import Swal from "sweetalert2";
 import { ToastContainer, toast } from "react-toastify";
 import { AccountService } from "@/_services/Account.service";

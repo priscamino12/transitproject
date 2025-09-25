@@ -1,13 +1,14 @@
 "use client"
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts"
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts"
 import { useEffect, useState } from "react"
-import api from "@/app/axiosInstance"
+import api from "@/config/axiosInstance"
 
 interface MonthlyData {
   month: string
-  expeditions: number
+  maritime: number
+  aerienne: number
   revenus: number
 }
 
@@ -15,26 +16,30 @@ export function PerformanceChart() {
   const [data, setData] = useState<MonthlyData[]>([])
   const months = ["Jan", "Fév", "Mar", "Avr", "Mai", "Jun", "Jul", "Aoû", "Sep", "Oct", "Nov", "Déc"]
 
-  const mergeArrays = (maritime: any[], aerienne: any[]) => {
-    const merged: MonthlyData[] = months.map((m, i) => {
+  const mergeArrays = (maritime: any[], aerienne: any[]): MonthlyData[] => {
+    return months.map((m, i) => {
       const monthNumber = i + 1
-      const maritimeData = maritime.find((item) => Number(item.mois) === monthNumber)
-      const aerienneData = aerienne.find((item) => Number(item.mois) === monthNumber)
+      const maritimeData = maritime.find(item => Number(item.mois) === monthNumber) || { count: 0, revenus: 0 }
+      const aerienneData = aerienne.find(item => Number(item.mois) === monthNumber) || { count: 0, revenus: 0 }
       return {
         month: m,
-        expeditions: (maritimeData?.count || 0) + (aerienneData?.count || 0),
-        revenus: (maritimeData?.revenus || 0) + (aerienneData?.revenus || 0),
+        maritime: maritimeData.count,
+        aerienne: aerienneData.count,
+        revenus: maritimeData.revenus + aerienneData.revenus,
       }
     })
-    return merged
   }
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const maritime = await api.get("/hbl/count/byMonth")  // Retourne [{mois:1,count:10,revenus:1000}, ...]
-        const aerienne = await api.get("/hawb/count/byMonth") // Même format
-        setData(mergeArrays(maritime.data, aerienne.data))
+        const [maritimeRes, aerienneRes] = await Promise.all([
+          api.get("/hbl/count/byMonth"),
+          api.get("/hawb/count/byMonth")
+        ])
+
+        const merged = mergeArrays(maritimeRes.data, aerienneRes.data)
+        setData(merged)
       } catch (error) {
         console.error("Erreur lors de la récupération des données:", error)
       }
@@ -57,25 +62,34 @@ export function PerformanceChart() {
             <YAxis yAxisId="right" orientation="right" />
             <Tooltip
               formatter={(value, name) => [
-                name === "expeditions" ? `${value} expéditions` : `€${(value as number).toLocaleString()}`,
-                name === "expeditions" ? "Expéditions" : "Revenus",
+                name === "maritime" || name === "aerienne" ? `${value} expéditions` : `€${(value as number).toLocaleString()}`,
+                name === "maritime" ? "Maritime" : name === "aerienne" ? "Aérienne" : "Revenus",
               ]}
+            />
+            <Legend />
+            <Line
+              yAxisId="left"
+              type="monotone"
+              dataKey="maritime"
+              stroke="#3b82f6"
+              strokeWidth={2}
+              dot={{ fill: "#3b82f6" }}
             />
             <Line
               yAxisId="left"
               type="monotone"
-              dataKey="expeditions"
-              stroke="hsl(var(--primary))"
+              dataKey="aerienne"
+              stroke="#f43f5e"
               strokeWidth={2}
-              dot={{ fill: "hsl(var(--primary))" }}
+              dot={{ fill: "#f43f5e" }}
             />
             <Line
               yAxisId="right"
               type="monotone"
               dataKey="revenus"
-              stroke="hsl(var(--chart-2))"
+              stroke="#f97316"
               strokeWidth={2}
-              dot={{ fill: "hsl(var(--chart-2))" }}
+              dot={{ fill: "#f97316" }}
             />
           </LineChart>
         </ResponsiveContainer>

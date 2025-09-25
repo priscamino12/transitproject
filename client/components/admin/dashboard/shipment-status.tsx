@@ -1,32 +1,68 @@
+"use client"
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
 import { Badge } from "@/components/ui/badge"
 import { FaPlane, FaShip } from "react-icons/fa"
+import { useEffect, useState } from "react"
+import api from "@/config/axiosInstance"
 
-const shipmentData = [
-  {
-    type: "Aérien",
-    icon: FaPlane,
-    total: 45,
-    statuses: [
-      { label: "En préparation", count: 12, color: "bg-yellow-500" },
-      { label: "En transit", count: 28, color: "bg-blue-500" },
-      { label: "Livré", count: 5, color: "bg-green-500" },
-    ],
-  },
-  {
-    type: "Maritime",
-    icon: FaShip,
-    total: 44,
-    statuses: [
-      { label: "En préparation", count: 8, color: "bg-yellow-500" },
-      { label: "En transit", count: 32, color: "bg-blue-500" },
-      { label: "Livré", count: 4, color: "bg-green-500" },
-    ],
-  },
-]
+interface Status {
+  label: string
+  count: number
+  color: string
+}
+
+interface TransportData {
+  type: string
+  icon: any
+  total: number
+  statuses: Status[]
+}
 
 export function ShipmentStatus() {
+  const [shipmentData, setShipmentData] = useState<TransportData[]>([])
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        // Récupérer tous les suivis HBL et HAWB
+        const [hblRes, hawbRes] = await Promise.all([
+          api.get("/suiviHBL/suivre/all"),
+          api.get("/suiviHAWB/suivre/all")
+        ])
+
+        const processStatuses = (suivis: any[], type: string, icon: any) => {
+          const statusCounts: { [key: string]: number } = {}
+          suivis.forEach(s => {
+            const status = s.status
+            statusCounts[status] = (statusCounts[status] || 0) + 1
+          })
+
+          const total = suivis.length
+          const statuses: Status[] = [
+            { label: "En préparation", count: statusCounts["En préparation"] || 0, color: "bg-yellow-500" },
+            { label: "En transit", count: statusCounts["En transit"] || 0, color: "bg-blue-500" },
+            { label: "Livré", count: statusCounts["Livré"] || 0, color: "bg-green-500" },
+          ]
+
+          return { type, icon, total, statuses }
+        }
+
+        const data: TransportData[] = [
+          processStatuses(hawbRes.data, "Aérien", FaPlane),
+          processStatuses(hblRes.data, "Maritime", FaShip),
+        ]
+
+        setShipmentData(data)
+      } catch (error) {
+        console.error("Erreur récupération suivi:", error)
+      }
+    }
+
+    fetchData()
+  }, [])
+
   return (
     <Card>
       <CardHeader>

@@ -3,79 +3,42 @@
 import { useEffect, useState } from "react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { FaPlane, FaShip, FaEye, FaEdit, FaTrash, FaDownload, FaSearch, FaFilter } from "react-icons/fa";
-import api from "@/app/axiosInstance";
-import { Modal } from "../modal/modal";
+import { FaPlane, FaShip, FaEye, FaEdit, FaTrash, FaDownload, FaSearch } from "react-icons/fa";
 import { Input } from "@/components/ui/input";
+import { Modal } from "../modal/modal";
 import { DeleteConfirmModal } from "../../clients/delete-confirm-modal";
+import { Master } from "@/types/master.interface";
+import { masterService } from "@/services/master.service";
 
-type Master = {
-  id: number;
-  type: "MAWB" | "MBL";
-  numero: string;
-  dateEmission: string;
-  dateArrivePrevue: string;
-  transportName: string;
-  transportInfo: any;
-};
 interface MastersTableProps {
-  onEditMaster: (master: any) => void;
+  onEditMaster: (master: Master) => void;
 }
 
 export function MastersTable({ onEditMaster }: MastersTableProps) {
   const [masters, setMasters] = useState<Master[]>([]);
   const [loading, setLoading] = useState(true);
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-
-  const [masterToDelete, setMasterToDelete] = useState<Master | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
 
   const [selectedMaster, setSelectedMaster] = useState<Master | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
+  const [masterToDelete, setMasterToDelete] = useState<Master | null>(null);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
-  const [searchTerm, setSearchTerm] = useState("");
-  const openModal = (master: Master) => {
-    setSelectedMaster(master);
-    setIsModalOpen(true);
-  };
-
   const fetchMasters = async () => {
+    setLoading(true);
     try {
-      const [mawbRes, mblRes] = await Promise.all([api.get("/mawb"), api.get("/mbl")]);
-
-      const airData = mawbRes.data
-        .filter((m: any) => m.TransAerienne)
-        .map((m: any) => ({
-          id: m.idMAWB,
-          type: "MAWB" as const,
-          numero: m.numMAWB,
-          dateEmission: m.dateEmission,
-          dateArrivePrevue: m.dateArrivePrevue,
-          transportName: m.TransAerienne.nomCompagnie,
-          transportInfo: m.TransAerienne,
-        }));
-
-      const seaData = mblRes.data
-        .filter((m: any) => m.TransMaritime)
-        .map((m: any) => ({
-          id: m.idMBL,
-          type: "MBL" as const,
-          numero: m.numMBL,
-          dateEmission: m.dateEmission,
-          dateArrivePrevue: m.dateArrivePrevue,
-          transportName: m.TransMaritime.nomNavire,
-          transportInfo: m.TransMaritime,
-        }));
-
-      setMasters([...airData, ...seaData].sort((a, b) => new Date(a.dateEmission).getTime() - new Date(b.dateEmission).getTime()));
+      const data = await masterService.getAll();
+      setMasters(data);
     } catch (error) {
       console.error("Erreur de chargement :", error);
     } finally {
       setLoading(false);
     }
-  }
+  };
 
   useEffect(() => {
     fetchMasters();
@@ -83,6 +46,11 @@ export function MastersTable({ onEditMaster }: MastersTableProps) {
 
   const getTransportIcon = (type: "MAWB" | "MBL") =>
     type === "MBL" ? <FaShip className="text-blue-600 w-4 h-4" /> : <FaPlane className="text-teal-600 w-4 h-4" />;
+
+  const openModal = (master: Master) => {
+    setSelectedMaster(master);
+    setIsModalOpen(true);
+  };
 
   const handleDelete = (master: Master) => {
     setMasterToDelete(master);
@@ -92,7 +60,7 @@ export function MastersTable({ onEditMaster }: MastersTableProps) {
   const confirmDelete = async () => {
     if (!masterToDelete) return;
     try {
-      await api.delete(masterToDelete.type === "MAWB" ? `/mawb/${masterToDelete.id}` : `/mbl/${masterToDelete.id}`);
+      await masterService.delete(masterToDelete);
       setIsDeleteModalOpen(false);
       setMasterToDelete(null);
       fetchMasters();
@@ -101,13 +69,12 @@ export function MastersTable({ onEditMaster }: MastersTableProps) {
     }
   };
 
-
   if (loading) return <div className="p-4">Chargement des données...</div>;
 
   const filteredData = masters.filter(
-    (item) =>
-      item.numero?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.transportName?.toLowerCase().includes(searchTerm.toLowerCase())
+    (m) =>
+      m.numero.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      m.transportName.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const indexOfLastItem = currentPage * itemsPerPage;
@@ -130,6 +97,7 @@ export function MastersTable({ onEditMaster }: MastersTableProps) {
             />
           </div>
         </div>
+
         <Table className="min-w-[700px] md:min-w-full">
           <TableHeader>
             <TableRow>
@@ -170,16 +138,12 @@ export function MastersTable({ onEditMaster }: MastersTableProps) {
                   <Button variant="ghost" size="sm" title="Voir détails" onClick={() => openModal(m)}>
                     <FaEye className="w-4 h-4" />
                   </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    title="Modifier"
-                    onClick={() => onEditMaster(m)}
-                  >
+                  <Button variant="ghost" size="sm" title="Modifier" onClick={() => onEditMaster(m)}>
                     <FaEdit className="w-4 h-4" />
                   </Button>
-
-                  <Button variant="ghost" onClick={() => handleDelete(m)} size="sm" className="text-red-600 hover:text-red-700" title="Supprimer"><FaTrash className="w-4 h-4" /></Button>
+                  <Button variant="ghost" size="sm" className="text-red-600 hover:text-red-700" onClick={() => handleDelete(m)} title="Supprimer">
+                    <FaTrash className="w-4 h-4" />
+                  </Button>
                 </TableCell>
               </TableRow>
             ))}
@@ -198,8 +162,8 @@ export function MastersTable({ onEditMaster }: MastersTableProps) {
             </Button>
           ))}
         </div>
-
       </div>
+
       {selectedMaster && (
         <Modal open={isModalOpen} onClose={() => setIsModalOpen(false)} title={`Détails du master ${selectedMaster.numero}`}>
           <div className="space-y-2 text-sm">
@@ -231,7 +195,6 @@ export function MastersTable({ onEditMaster }: MastersTableProps) {
         onConfirm={confirmDelete}
         clientName={masterToDelete?.numero || ""}
       />
-
     </>
   );
 }

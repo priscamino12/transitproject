@@ -11,7 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { FiArrowLeft, FiSave, FiX, FiPackage } from "react-icons/fi";
 import Swal from "sweetalert2";
 import { HouseTabs } from "../transactions/house/house";
-import api from "@/app/axiosInstance";
+import api from "@/config/axiosInstance";
 
 interface TrackingFormProps {
   onSave?: (data: any) => void;

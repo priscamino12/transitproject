@@ -9,7 +9,7 @@ import { HAWBForm } from "./hawb/HAWBForm";
 import { MBLForm } from "./mbl/MBLForm";
 import { HBLForm } from "./hbl/HBLForm";
 import { FiArrowLeft } from "react-icons/fi";
-import api from "@/app/axiosInstance";
+import api from "@/config/axiosInstance";
 import Swal from "sweetalert2";
 import { jwtDecode } from "jwt-decode";
 
