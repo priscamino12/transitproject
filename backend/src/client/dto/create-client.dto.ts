@@ -1,27 +1,23 @@
-import { IsString, IsEmail, IsOptional } from 'class-validator';
+import { IsString, IsEmail, IsOptional, IsInt } from 'class-validator';
 
 export class CreateClientDto {
-  @IsString()
-  nomClient: string;
+  @IsString({ message: 'Le nom du client doit être une chaîne de caractères.' })
+  nomClient!: string;
 
-  @IsString()
+  @IsEmail({}, { message: "L'email du client doit être une adresse email valide." })
+  emailClient!: string;
+
+  @IsString({ message: 'Le numéro de téléphone doit être une chaîne de caractères.' })
   @IsOptional()
-  CINClient?: string;
+  telClient?: string;
 
-  @IsEmail()
-  emailClient: string;
-
-  @IsString()
-  telClient: string;
-
-  @IsString()
+  @IsString({ message: "L'adresse du client doit être une chaîne de caractères." })
   @IsOptional()
   adresseClient?: string;
 
-  @IsString()
-  creerPar: string;
+  @IsString({ message: 'Le CIN du client doit être une chaîne de caractères.' })
+  CINClient!: string;
 
-  @IsString()
-  @IsOptional()
-  modifierPar?: string;
+  @IsInt({ message: "L'ID de l'employé créateur (creerPar) doit être un entier." })
+  creerPar!: number;
 }

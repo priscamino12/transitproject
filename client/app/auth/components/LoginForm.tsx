@@ -28,6 +28,7 @@ export default function LoginForm({ onForgot }: Props) {
          router.push("/admin/dashboard");
       }
     } catch (err: any) {
+      console.error(err);
       const message = err.response?.data?.message?.message || err.response?.data?.error || "Identifiants invalides";
       toast.error(message, {
         position: "top-right",

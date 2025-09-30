@@ -1,5 +1,5 @@
 import { Injectable, UnauthorizedException, BadRequestException } from '@nestjs/common';
-import { PrismaService } from '@prisma/prisma.service';
+import { PrismaService } from '@/prisma/prisma.service';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import * as nodemailer from 'nodemailer';
@@ -37,6 +37,7 @@ export class AuthService {
     const payload = { sub: employe.idEmploye, email: employe.emailEmploye, role: employe.typeEmploye };
     const token = this.jwtService.sign(payload);
     const user = {
+      id: employe.idEmploye,
       email: employe.emailEmploye,
       role: employe.typeEmploye,
       nom: employe.nomEmploye,

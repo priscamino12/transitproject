@@ -1,3 +1,6 @@
+const { pathsToModuleNameMapper } = require('ts-jest');
+const { compilerOptions } = require('./tsconfig.json');
+
 module.exports = {
   moduleFileExtensions: ['js', 'json', 'ts'],
   rootDir: '.',
@@ -7,11 +10,8 @@ module.exports = {
   },
   testEnvironment: 'node',
   roots: ['<rootDir>/test'],
-  moduleNameMapper: {
-    '^@auth/(.*)$': '<rootDir>/src/auth/$1',
-    '^@prisma/(?!client)(.*)$': '<rootDir>/src/prisma/$1', // Exclure tout ce qui commence par @prisma/client
-    '^@employe/(.*)$': '<rootDir>/src/employe/$1',
-    '^@prisma/client($|/.+)': '<rootDir>/node_modules/@prisma/client$1', // Mapper @prisma/client et ses sous-modules
-  },
+  moduleNameMapper: pathsToModuleNameMapper(compilerOptions.paths, {
+    prefix: '<rootDir>/src/',
+  }),
   setupFilesAfterEnv: ['<rootDir>/test/setup.ts'],
 };

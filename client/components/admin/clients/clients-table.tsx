@@ -24,8 +24,8 @@ export function ClientsTable({ onEditClient }: ClientsTableProps) {
 
   const allClient = async () => {
     try {
-      const response = await api.get("/client/");
-      setClients(response.data);
+      const response = await api.get("/clients");
+      setClients(response.data.data);
     } catch (error) {
       console.error("Erreur lors de la récupération des clients :", error);
     }
@@ -57,7 +57,7 @@ export function ClientsTable({ onEditClient }: ClientsTableProps) {
   const confirmDelete = async () => {
     if (clientToDelete) {
       try {
-        await api.delete(`/client/${clientToDelete.idClient}`);
+        await api.delete(`/clients/${clientToDelete.idClient}`);
         setIsDeleteModalOpen(false);
         setClientToDelete(null);
         allClient();

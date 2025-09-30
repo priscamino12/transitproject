@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { AuthService } from '@auth/auth.service';
-import { PrismaService } from '@prisma/prisma.service';
+import { AuthService } from '@/auth/auth.service';
+import { PrismaService } from '@/prisma/prisma.service';
 import { JwtService } from '@nestjs/jwt';
 import { UnauthorizedException, BadRequestException } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
@@ -65,6 +65,7 @@ describe('AuthService', () => {
     };
     const token = 'jwt_token';
     const user = {
+      id: employe.idEmploye,
       email: employe.emailEmploye,
       role: employe.typeEmploye,
       nom: employe.nomEmploye,

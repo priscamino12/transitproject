@@ -1,15 +1,15 @@
-import { IsString, IsEmail, IsEnum } from 'class-validator';
+import { IsString, IsEmail } from 'class-validator';
 
 export class CreateEmployeDto {
   @IsString()
-  nomEmploye: string;
+  nomEmploye!: string;
 
   @IsEmail()
-  emailEmploye: string;
+  emailEmploye!: string;
 
   @IsString()
-  motDePasse: string;
+  motDePasse!: string;
 
-  @IsEnum(['Employe', 'Admin'])
-  typeEmploye: string;
+  @IsString()
+  typeEmploye!: string;
 }

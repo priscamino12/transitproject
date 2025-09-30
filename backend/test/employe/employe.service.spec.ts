@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { EmployeService } from '@employe/employe.service';
-import { PrismaService } from '@prisma/prisma.service';
+import { EmployeService } from '@/employe/employe.service';
+import { PrismaService } from '@/prisma/prisma.service';
 import { ConfigService } from '@nestjs/config';
 
 describe('EmployeService', () => {

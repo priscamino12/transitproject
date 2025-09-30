@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react"
+import { use, useEffect, useRef, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -18,17 +18,29 @@ interface ClientFormProps {
 }
 
 export function ClientForm({ client, isEdit = false, onSave, onCancel }: ClientFormProps) {
-  const idEmploye = 1 // remplacer par l’ID connecté si besoin
+  const idEmploye = useRef<number | null>(null);
 
+  useEffect(() => {
+    const userConnected = localStorage.getItem("user");
+    if (userConnected) {
+      const user = JSON.parse(userConnected); // transforme la chaîne en objet
+      idEmploye.current = user.id
+      setFormData(prev => ({
+        ...prev,
+        creerPar: prev.creerPar || user.id,
+        modifierPar: user.id
+      }));
+    }
+  }, []);
   const [formData, setFormData] = useState({
     nomClient: client?.nomClient || "",
     emailClient: client?.emailClient || "",
     telClient: client?.telClient || "",
     CINClient: client?.CINClient || "",
     adresseClient: client?.adresseClient || "",
-    notes: client?.notes || "",
-    creerPar: client?.creerPar || idEmploye,
-    modifierPar: idEmploye,
+    // notes: client?.notes || "",
+    creerPar: client?.creerPar || idEmploye.current,
+    modifierPar: idEmploye.current,
   })
 
   const handleChange = (field: string, value: string) => {
@@ -37,22 +49,36 @@ export function ClientForm({ client, isEdit = false, onSave, onCancel }: ClientF
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-
+    if (!idEmploye.current) {
+      Swal.fire({ icon: "error", title: "Erreur", text: "Employé non défini. Veuillez vous reconnecter." });
+      return;
+    }
     try {
       let responseData;
       if (isEdit && client?.idClient) {
-        const res = await api.put(`/client/${client.idClient}`, formData)
+        const { creerPar, ...dataToSend } = formData;
+        const res = await api.put(`/clients/${client.idClient}`, dataToSend)
+        if (!res.data.success) {
+          Swal.fire({ icon: "error", title: "Erreur", text: res.data.message });
+          return;
+        }
         Swal.fire({ icon: "success", title: "Modifié!", text: "Le client a été modifié.", timer: 2000, showConfirmButton: false })
-        responseData = { ...client, ...formData }
+        responseData = { ...client, ...dataToSend }
       } else {
-        const res = await api.post("/client/", formData)
+
+        const { modifierPar, ...dataToSend } = formData;
+        const res = await api.post("/clients", dataToSend)
+        if (!res.data.success) {
+          Swal.fire({ icon: "error", title: "Erreur", text: res.data.message });
+          return;
+        }
         Swal.fire({ icon: "success", title: "Ajouté!", text: "Le client a été ajouté.", timer: 2000, showConfirmButton: false })
         responseData = res.data
       }
 
       onSave(responseData) // ← transmet les données au parent
     } catch (err: any) {
-      Swal.fire({ icon: "error", title: "Erreur", text: err.response?.data?.error || err.message })
+      Swal.fire({ icon: "error", title: "Erreur", text: err.response?.data?.message || err.message })
     }
   }
 
@@ -100,10 +126,10 @@ export function ClientForm({ client, isEdit = false, onSave, onCancel }: ClientF
               <Label>Adresse *</Label>
               <Textarea value={formData.adresseClient} onChange={(e) => handleChange("adresseClient", e.target.value)} required />
             </div>
-            <div>
+            {/* <div>
               <Label>Notes</Label>
               <Textarea value={formData.notes} onChange={(e) => handleChange("notes", e.target.value)} />
-            </div>
+            </div> */}
             <div className="flex justify-end space-x-4">
               <Button type="button" variant="outline" onClick={onCancel}>
                 <FiX className="w-4 h-4 mr-2" /> Annuler
