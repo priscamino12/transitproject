@@ -1,4 +1,4 @@
-import { IsString, IsEmail } from 'class-validator';
+import { IsString, IsEmail, IsOptional, IsInt } from 'class-validator';
 
 export class CreateEmployeDto {
   @IsString()
@@ -10,6 +10,10 @@ export class CreateEmployeDto {
   @IsString()
   motDePasse!: string;
 
+  @IsOptional()
   @IsString()
-  typeEmploye!: string;
+  role?: string;
+
+  @IsInt()
+  idEntreprise!: number;
 }

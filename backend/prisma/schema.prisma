@@ -117,7 +117,7 @@ model Employe {
   nomEmploye    String
   emailEmploye  String    @unique
   motDePasse    String
-  typeEmploye   String    @default("admin") // Enum simulé
+  role          String    @default("admin") // Enum simulé
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
   idEntreprise  Int
@@ -146,6 +146,8 @@ model Client {
   idClient      Int       @id @default(autoincrement())
   nomClient     String
   emailClient   String    @unique
+  motDePasse    String?    
+  role          String    @default("client")
   telClient     String?   @unique
   adresseClient String?
   CINClient     String    @unique

@@ -1,9 +1,9 @@
 import { IsString, IsEmail } from 'class-validator';
 
-export class LoginSuperAdminDto {
+export class LoginDto {
   @IsEmail()
-  emailAdmin: string;
+  email!: string;
 
   @IsString()
-  motDePasse: string;
+  motDePasse!: string;
 }
