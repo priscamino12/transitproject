@@ -7,7 +7,7 @@ import { LoginDto } from './dto/login.dto';
 
 @Injectable()
 export class AuthService {
-  constructor(private prisma: PrismaService, private jwtService: JwtService) {}
+  constructor(private prisma: PrismaService, private jwtService: JwtService) { }
 
   async login(loginDto: LoginDto): Promise<{ response: ApiResponse<{ user: { id: number; nom: string; email: string; role: string } }>, token: string }> {
     try {
@@ -20,33 +20,28 @@ export class AuthService {
       });
       if (user) {
         role = user.role;
-      }
-
-      // Vérifier dans Employe si pas trouvé dans AdminSysteme
-      if (!user) {
+      } else {
+        // Vérifier dans Employe
         user = await this.prisma.employe.findUnique({
           where: { emailEmploye: loginDto.email },
         });
         if (user) {
           role = user.role;
+        } else {
+          // Vérifier dans Client
+          user = await this.prisma.client.findUnique({
+            where: { emailClient: loginDto.email },
+          });
+          if (user) {
+            role = user.role;
+          }
         }
       }
-
-      // Vérifier dans Client si pas trouvé dans Employe
-      if (!user) {
-        user = await this.prisma.client.findUnique({
-          where: { emailClient: loginDto.email },
-        });
-        if (user) {
-          role = user.role;
-        }
-      }
-
       // Si aucun utilisateur n'est trouvé
       if (!user) {
         throw new UnauthorizedException({
           success: false,
-          message: 'Vous n\'êtes pas autorisé à accéder à cette ressource.',
+          message: 'Utilisateur non trouvé.',
           data: null,
         });
       }
@@ -69,12 +64,21 @@ export class AuthService {
         });
       }
 
+      // Vérifier que le rôle est défini
+      if (!role) {
+        throw new UnauthorizedException({
+          success: false,
+          message: 'Rôle de l\'utilisateur non défini.',
+          data: null,
+        });
+      }
+
       // Préparer les données de l'utilisateur
       const userData = {
         id: user.idAdmin || user.idEmploye || user.idClient,
         nom: user.nomAdmin || user.nomEmploye || user.nomClient,
         email: user.emailAdmin || user.emailEmploye || user.emailClient,
-        role: role ,
+        role: user.role || role ,
       };
 
       // Générer le token JWT
@@ -96,7 +100,7 @@ export class AuthService {
     } catch (error: any) {
       throw new UnauthorizedException({
         success: false,
-        message: `Erreur lors de l'authentification: ${error.message}`,
+        message: `${error.message}`,
         data: null,
       });
     }

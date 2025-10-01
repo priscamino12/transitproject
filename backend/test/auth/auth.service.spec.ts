@@ -201,6 +201,13 @@ describe('AuthService', () => {
       mockPrismaService.client.findUnique.mockResolvedValue(null);
 
       await expect(service.login(loginDto)).rejects.toThrow(UnauthorizedException);
+      await expect(service.login(loginDto)).rejects.toMatchObject({
+        response: {
+          success: false,
+          message: 'Utilisateur non trouvé.',
+          data: null,
+        },
+      });
     });
 
     it('should throw error if password is invalid', async () => {
@@ -208,6 +215,13 @@ describe('AuthService', () => {
       (bcrypt.compare as jest.Mock).mockResolvedValue(false);
 
       await expect(service.login(loginDto)).rejects.toThrow(UnauthorizedException);
+      await expect(service.login(loginDto)).rejects.toMatchObject({
+        response: {
+          success: false,
+          message: 'Mot de passe incorrect.',
+          data: null,
+        },
+      });
     });
 
     it('should throw error if client has no password', async () => {
@@ -216,6 +230,27 @@ describe('AuthService', () => {
       mockPrismaService.client.findUnique.mockResolvedValue({ ...mockClient, motDePasse: null });
 
       await expect(service.login({ ...loginDto, email: 'client@test.com' })).rejects.toThrow(UnauthorizedException);
+      await expect(service.login({ ...loginDto, email: 'client@test.com' })).rejects.toMatchObject({
+        response: {
+          success: false,
+          message: 'Aucun mot de passe défini pour cet utilisateur.',
+          data: null,
+        },
+      });
+    });
+
+    it('should throw error if role is not defined', async () => {
+      mockPrismaService.adminSysteme.findUnique.mockResolvedValue({ ...mockAdmin, role: undefined });
+      (bcrypt.compare as jest.Mock).mockResolvedValue(true);
+
+      await expect(service.login(loginDto)).rejects.toThrow(UnauthorizedException);
+      await expect(service.login(loginDto)).rejects.toMatchObject({
+        response: {
+          success: false,
+          message: 'Rôle de l\'utilisateur non défini.',
+          data: null,
+        },
+      });
     });
   });
 });
