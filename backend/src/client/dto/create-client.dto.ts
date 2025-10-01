@@ -1,6 +1,6 @@
 import { IsString, IsEmail, IsOptional, IsInt } from 'class-validator';
 
-export class CreateClientDto {
+export class CreateClientDto { 
   @IsString({ message: 'Le nom du client doit être une chaîne de caractères.' })
   nomClient!: string;
 
