@@ -8,7 +8,7 @@ class HouseService {
   async getHouseTransactionById(id) {
     return await this.HouseRepository.findById(id);
   }
-  async getHouseTransactionByNum(num) { 
+  async getHouseTransactionByNum(num) {
     return await this.HouseRepository.findByNum(num);
   }
   async getAllHouseTransactions() {
@@ -36,6 +36,11 @@ class HouseService {
   async deleteHouseTransaction(id) {
     return await this.HouseRepository.delete(id);
   }
+  async getAllByMonthHouseTransactions() {
+    const transactions = await this.HouseRepository.findAll();
+    return transactions;
+  }
+
 }
 
 module.exports = HouseService;

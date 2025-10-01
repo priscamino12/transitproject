@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import api from "@/config/axiosInstance";
 import Swal from "sweetalert2";
 import { ToastContainer, toast } from "react-toastify";
-import { AccountService } from "@/_services/Account.service";
+import { AccountService } from "@/services/Account.service";
 import {jwtDecode} from "jwt-decode";
 import { GoArrowLeft } from "react-icons/go";
 
@@ -17,7 +17,7 @@ export default function Formulaire() {
   const [code, setCode] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [step, setStep] = useState(1); // 1: Email, 2: Code+Password
+  const [step, setStep] = useState(1);
   const [token, setToken] = useState("");
   const [valideEmail, setValideEmail] = useState(true);
 

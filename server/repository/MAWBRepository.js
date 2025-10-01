@@ -11,10 +11,25 @@ class MAWBRepository {
   async findById(id) {
     return await MAWB.findByPk(id);
   }
+  async countByMonth() {
+    const results = await sequelize.query(
+      `
+    SELECT 
+      MONTH(dateEmission) AS mois, 
+      COUNT(*) AS count,
+      SUM(fret + assurance + autresFrais) AS revenus
+    FROM mawbs
+    WHERE YEAR(dateEmission) = YEAR(CURRENT_DATE)
+    GROUP BY mois;
+  `,
+      { type: sequelize.QueryTypes.SELECT });
+    return results;
+  }
+
   async getById(id) {
-    return await MAWB.findOne( {
-      where:{
-        idMAWB : id
+    return await MAWB.findOne({
+      where: {
+        idMAWB: id
       },
       attributes: [
         'idMAWB',
@@ -38,7 +53,7 @@ class MAWBRepository {
           required: true, // pour forcer la jointure
         }
       ],
-    })  
+    })
   }
   async findByMere(mawb) {
     return await MAWB.findOne({ where: { numMAWB: mawb } });

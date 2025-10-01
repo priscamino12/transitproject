@@ -117,14 +117,35 @@ class HouseController {
       res.status(500).send(error.message);
     }
   }
+
+  // Dans HouseController
   async getAllByMonthHouseTransactions(req, res) {
     try {
-      const HouseTransactions = await this.HouseService.getAllByMonthHouseTransactions();
-      res.status(200).json(HouseTransactions);
+      // Récupérer toutes les transactions HBL ou HAWB selon le repository
+      const allTransactions = await this.HouseService.getAllHouseTransactions();
+
+      // Préparer un tableau de 12 mois
+      const months = Array.from({ length: 12 }, (_, i) => i + 1);
+      const monthlyData = months.map((m) => {
+        const monthTransactions = allTransactions.filter(tx => {
+          const date = new Date(tx.dateEmmission || tx.dateEmission);
+          return date.getMonth() + 1 === m;
+        });
+
+        const count = monthTransactions.length;
+        const revenus = monthTransactions.reduce((sum, tx) => sum + (tx.fret || 0) + (tx.assurance || 0) + (tx.autresFrais || 0), 0);
+
+        return { mois: m, count, revenus };
+      });
+
+      res.status(200).json(monthlyData);
     } catch (error) {
-      res.status(500).send(error.message);
+      console.error("Erreur getAllByMonthHouseTransactions:", error);
+      res.status(500).json({ error: "Erreur serveur lors du calcul par mois" });
     }
   }
+
+
   async getCountAllOnYearHouseTransactions(req, res) {
     try {
       const HouseTransactions = await this.HouseService.getCountAllOnYearHouseTransactions();

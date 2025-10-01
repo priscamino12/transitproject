@@ -5,7 +5,6 @@ const api = axios.create({
   /* withCredentials: true, */
 });
 
-// Intercepteur pour ajouter le token dans les en-têtes
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('token');
   if (token) {

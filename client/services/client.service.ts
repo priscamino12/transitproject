@@ -24,3 +24,4 @@ export async function updateClient(id: number, data: Client): Promise<Client> {
 export async function deleteClient(id: number): Promise<void> {
   await api.delete(`/client/${id}`);
 }
+

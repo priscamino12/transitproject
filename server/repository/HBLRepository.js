@@ -31,7 +31,7 @@ class HBLRepository {
           ]
         },
         { model: Client, as: "clientExp", attributes: ["nomClient", "adresseClient", "telClient"] },
-        { model: Client, as: "clientDest", attributes: ["nomClient",  "adresseClient", "telClient"] }
+        { model: Client, as: "clientDest", attributes: ["nomClient", "adresseClient", "telClient"] }
       ]
     });
   }
@@ -47,20 +47,23 @@ class HBLRepository {
       ),
     });
   }
+
   async countByMonth() {
     const results = await sequelize.query(
       `
-      SELECT 
-        DATE_FORMAT(dateEmmission, '%M') AS mois, 
-        COUNT(*) AS Maritime
-      FROM hbls
-      WHERE YEAR(dateEmmission) = YEAR(CURRENT_DATE)
-      GROUP BY mois;
-    `,
-      { type: sequelize.QueryTypes.SELECT }
-    );
+    SELECT 
+      MONTH(dateEmmission) AS mois, 
+      COUNT(*) AS count,
+      SUM(fret + assurance + autresFrais) AS revenus
+    FROM hbls
+    WHERE YEAR(dateEmmission) = YEAR(CURRENT_DATE)
+    GROUP BY mois;
+  `,
+      { type: sequelize.QueryTypes.SELECT });
     return results;
   }
+
+
   async findAll() {
     return await HBL.findAll({
       attributes: [
