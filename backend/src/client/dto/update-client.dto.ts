@@ -1,29 +1,39 @@
-import { IsString, IsEmail, IsOptional, Length, IsInt } from 'class-validator';
+import { IsString, IsEmail, IsOptional, IsInt } from 'class-validator';
 
 export class UpdateClientDto {
-  @IsString()
   @IsOptional()
-  @Length(2, 50, { message: 'Le nom doit contenir entre 2 et 50 caractères.' })
+  @IsString()
   nomClient?: string;
 
-  @IsEmail({}, { message: 'Veuillez fournir une adresse email valide.' })
   @IsOptional()
+  @IsEmail()
   emailClient?: string;
 
-  @IsString({ message: 'Le numéro de téléphone doit être une chaîne de caractères.' })
   @IsOptional()
+  @IsString()
   telClient?: string;
 
-  @IsString()
   @IsOptional()
-  @Length(5, 100, { message: 'L’adresse doit contenir entre 5 et 100 caractères.' })
+  @IsString()
   adresseClient?: string;
 
-  @IsString({ message: 'Le CIN du client doit être une chaîne de caractères.' })
   @IsOptional()
+  @IsString()
   CINClient?: string;
 
-  @IsInt({ message: "L'ID de l'employé qui modifie doit être un entier." })
   @IsOptional()
+  @IsString()
+  motDePasse?: string;
+
+  @IsOptional()
+  @IsString()
+  role?: string;
+
+  @IsOptional()
+  @IsInt()
+  idEntreprise?: number;
+
+  @IsOptional()
+  @IsInt()
   modifierPar?: number;
 }

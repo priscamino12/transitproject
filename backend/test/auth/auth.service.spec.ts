@@ -2,36 +2,67 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { AuthService } from '@/auth/auth.service';
 import { PrismaService } from '@/prisma/prisma.service';
 import { JwtService } from '@nestjs/jwt';
-import { UnauthorizedException, BadRequestException } from '@nestjs/common';
+import { LoginDto } from '@/auth/dto/login.dto';
 import * as bcrypt from 'bcrypt';
-import * as nodemailer from 'nodemailer';
+import { UnauthorizedException } from '@nestjs/common';
 
 jest.mock('bcrypt', () => ({
   compare: jest.fn(),
-  hash: jest.fn(),
-}));
-
-jest.mock('nodemailer', () => ({
-  createTransport: jest.fn().mockReturnValue({
-    sendMail: jest.fn().mockResolvedValue(undefined),
-  }),
+  hash: jest.fn().mockResolvedValue('$2b$10$hashedpassword'),
 }));
 
 describe('AuthService', () => {
-  let authService: AuthService;
-  let prismaService: PrismaService;
+  let service: AuthService;
+  let prisma: PrismaService;
   let jwtService: JwtService;
 
+  const mockAdmin = {
+    idAdmin: 1,
+    nomAdmin: 'Admin Test',
+    emailAdmin: 'admin@test.com',
+    motDePasse: '$2b$10$hashedpassword',
+    role: 'SuperAdmin',
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  };
+
+  const mockEmploye = {
+    idEmploye: 2,
+    nomEmploye: 'Employe Test',
+    emailEmploye: 'employe@test.com',
+    motDePasse: '$2b$10$hashedpassword',
+    role: 'admin',
+    idEntreprise: 1,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  };
+
+  const mockClient = {
+    idClient: 3,
+    nomClient: 'Client Test',
+    emailClient: 'client@test.com',
+    motDePasse: '$2b$10$hashedpassword',
+    role: 'client',
+    idEntreprise: 1,
+    creerPar: 2,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  };
+
   const mockPrismaService = {
+    adminSysteme: {
+      findUnique: jest.fn(),
+    },
     employe: {
       findUnique: jest.fn(),
-      update: jest.fn(),
+    },
+    client: {
+      findUnique: jest.fn(),
     },
   };
 
   const mockJwtService = {
-    sign: jest.fn(),
-    verify: jest.fn(),
+    sign: jest.fn().mockReturnValue('jwt_token'),
   };
 
   beforeEach(async () => {
@@ -43,8 +74,8 @@ describe('AuthService', () => {
       ],
     }).compile();
 
-    authService = module.get<AuthService>(AuthService);
-    prismaService = module.get<PrismaService>(PrismaService);
+    service = module.get<AuthService>(AuthService);
+    prisma = module.get<PrismaService>(PrismaService);
     jwtService = module.get<JwtService>(JwtService);
   });
 
@@ -52,253 +83,174 @@ describe('AuthService', () => {
     jest.clearAllMocks();
   });
 
-  describe('authenticate', () => {
-    const email = 'test@exemple.com';
-    const password = 'password123';
-    const hashedPassword = '$2b$10$somehashedpassword';
-    const employe = {
-      idEmploye: 1,
-      emailEmploye: email,
-      motDePasse: hashedPassword,
-      typeEmploye: 'Employe',
-      nomEmploye: 'Test Employe',
-    };
-    const token = 'jwt_token';
-    const user = {
-      id: employe.idEmploye,
-      email: employe.emailEmploye,
-      role: employe.typeEmploye,
-      nom: employe.nomEmploye,
-    };
-
-    it('should return a JWT token and user info when credentials are valid', async () => {
-      mockPrismaService.employe.findUnique.mockResolvedValue(employe);
-      (bcrypt.compare as jest.Mock).mockResolvedValue(true);
-      mockJwtService.sign.mockReturnValue(token);
-
-      const result = await authService.authenticate(email, password);
-
-      expect(prismaService.employe.findUnique).toHaveBeenCalledWith({
-        where: { emailEmploye: email },
-      });
-      expect(bcrypt.compare).toHaveBeenCalledWith(password, hashedPassword);
-      expect(jwtService.sign).toHaveBeenCalledWith({
-        sub: employe.idEmploye,
-        email: employe.emailEmploye,
-        role: employe.typeEmploye,
-      });
-      expect(result).toEqual({
-        success: true,
-        message: 'Authentification réussie',
-        data: { user, token },
-      });
-    });
-
-    it('should throw UnauthorizedException with ApiResponse if user is not found', async () => {
-      mockPrismaService.employe.findUnique.mockResolvedValue(null);
-
-      await expect(authService.authenticate(email, password)).rejects.toMatchObject({
-        response: {
-          success: false,
-          message: 'Vous ne faites pas partie de notre équipe.',
-          data: null,
-        },
-      });
-      expect(prismaService.employe.findUnique).toHaveBeenCalledWith({
-        where: { emailEmploye: email },
-      });
-      expect(bcrypt.compare).not.toHaveBeenCalled();
-      expect(jwtService.sign).not.toHaveBeenCalled();
-    });
-
-    it('should throw UnauthorizedException with ApiResponse if password is invalid', async () => {
-      mockPrismaService.employe.findUnique.mockResolvedValue(employe);
-      (bcrypt.compare as jest.Mock).mockResolvedValue(false);
-
-      await expect(authService.authenticate(email, password)).rejects.toMatchObject({
-        response: {
-          success: false,
-          message: 'Mot de passe incorrect.',
-          data: null,
-        },
-      });
-      expect(prismaService.employe.findUnique).toHaveBeenCalledWith({
-        where: { emailEmploye: email },
-      });
-      expect(bcrypt.compare).toHaveBeenCalledWith(password, hashedPassword);
-      expect(jwtService.sign).not.toHaveBeenCalled();
-    });
+  it('should be defined', () => {
+    expect(service).toBeDefined();
   });
 
-  describe('forgotPwd', () => {
-    const email = 'test@exemple.com';
-    const employe = {
-      idEmploye: 1,
-      emailEmploye: email,
-      nomEmploye: 'Test Employe',
-      typeEmploye: 'Employe',
+  describe('login', () => {
+    const loginDto: LoginDto = {
+      email: 'admin@test.com',
+      motDePasse: 'password123',
     };
-    const token = 'jwt_token';
 
-    it('should generate and send a temporary code and return a token', async () => {
-      mockPrismaService.employe.findUnique.mockResolvedValue(employe);
-      mockPrismaService.employe.update.mockResolvedValue(employe);
-      mockJwtService.sign.mockReturnValue(token);
-      (nodemailer.createTransport as jest.Mock).mockReturnValue({
-        sendMail: jest.fn().mockResolvedValue(undefined),
-      });
+    it('should login an AdminSysteme successfully and return user data', async () => {
+      mockPrismaService.adminSysteme.findUnique.mockResolvedValue(mockAdmin);
+      (bcrypt.compare as jest.Mock).mockResolvedValue(true);
+      mockJwtService.sign.mockReturnValue('jwt_token');
 
-      const result = await authService.forgotPwd(email);
+      const result = await service.login(loginDto);
 
-      expect(prismaService.employe.findUnique).toHaveBeenCalledWith({
-        where: { emailEmploye: email },
+      expect(prisma.adminSysteme.findUnique).toHaveBeenCalledWith({
+        where: { emailAdmin: loginDto.email },
       });
-      expect(prismaService.employe.update).toHaveBeenCalledWith({
-        where: { emailEmploye: email },
-        data: expect.objectContaining({
-          codeTemp: expect.any(String),
-          codeTempExpires: expect.any(Date),
-        }),
-      });
-      expect(nodemailer.createTransport).toHaveBeenCalled();
+      expect(bcrypt.compare).toHaveBeenCalledWith(loginDto.motDePasse, mockAdmin.motDePasse);
       expect(jwtService.sign).toHaveBeenCalledWith({
-        sub: employe.idEmploye,
-        email: employe.emailEmploye,
+        sub: mockAdmin.idAdmin,
+        email: mockAdmin.emailAdmin,
+        role: mockAdmin.role,
       });
       expect(result).toEqual({
-        success: true,
-        message: 'Code temporaire envoyé avec succès.',
-        data: { token },
+        response: {
+          success: true,
+          message: 'Authentification réussie',
+          data: {
+            user: {
+              id: mockAdmin.idAdmin,
+              nom: mockAdmin.nomAdmin,
+              email: mockAdmin.emailAdmin,
+              role: mockAdmin.role,
+            },
+          },
+        },
+        token: 'jwt_token',
       });
     });
 
-    it('should throw BadRequestException with ApiResponse if user is not found', async () => {
-      mockPrismaService.employe.findUnique.mockResolvedValue(null);
+    it('should login an Employe successfully and return user data', async () => {
+      mockPrismaService.adminSysteme.findUnique.mockResolvedValue(null);
+      mockPrismaService.employe.findUnique.mockResolvedValue(mockEmploye);
+      (bcrypt.compare as jest.Mock).mockResolvedValue(true);
+      mockJwtService.sign.mockReturnValue('jwt_token');
 
-      await expect(authService.forgotPwd(email)).rejects.toMatchObject({
+      const result = await service.login({ ...loginDto, email: 'employe@test.com' });
+
+      expect(prisma.employe.findUnique).toHaveBeenCalledWith({
+        where: { emailEmploye: 'employe@test.com' },
+      });
+      expect(bcrypt.compare).toHaveBeenCalledWith(loginDto.motDePasse, mockEmploye.motDePasse);
+      expect(jwtService.sign).toHaveBeenCalledWith({
+        sub: mockEmploye.idEmploye,
+        email: mockEmploye.emailEmploye,
+        role: mockEmploye.role,
+      });
+      expect(result).toEqual({
+        response: {
+          success: true,
+          message: 'Authentification réussie',
+          data: {
+            user: {
+              id: mockEmploye.idEmploye,
+              nom: mockEmploye.nomEmploye,
+              email: mockEmploye.emailEmploye,
+              role: mockEmploye.role,
+            },
+          },
+        },
+        token: 'jwt_token',
+      });
+    });
+
+    it('should login a Client successfully and return user data', async () => {
+      mockPrismaService.adminSysteme.findUnique.mockResolvedValue(null);
+      mockPrismaService.employe.findUnique.mockResolvedValue(null);
+      mockPrismaService.client.findUnique.mockResolvedValue(mockClient);
+      (bcrypt.compare as jest.Mock).mockResolvedValue(true);
+      mockJwtService.sign.mockReturnValue('jwt_token');
+
+      const result = await service.login({ ...loginDto, email: 'client@test.com' });
+
+      expect(prisma.client.findUnique).toHaveBeenCalledWith({
+        where: { emailClient: 'client@test.com' },
+      });
+      expect(bcrypt.compare).toHaveBeenCalledWith(loginDto.motDePasse, mockClient.motDePasse);
+      expect(jwtService.sign).toHaveBeenCalledWith({
+        sub: mockClient.idClient,
+        email: mockClient.emailClient,
+        role: mockClient.role,
+      });
+      expect(result).toEqual({
+        response: {
+          success: true,
+          message: 'Authentification réussie',
+          data: {
+            user: {
+              id: mockClient.idClient,
+              nom: mockClient.nomClient,
+              email: mockClient.emailClient,
+              role: mockClient.role,
+            },
+          },
+        },
+        token: 'jwt_token',
+      });
+    });
+
+    it('should throw error if user not found', async () => {
+      mockPrismaService.adminSysteme.findUnique.mockResolvedValue(null);
+      mockPrismaService.employe.findUnique.mockResolvedValue(null);
+      mockPrismaService.client.findUnique.mockResolvedValue(null);
+
+      await expect(service.login(loginDto)).rejects.toThrow(UnauthorizedException);
+      await expect(service.login(loginDto)).rejects.toMatchObject({
         response: {
           success: false,
           message: 'Utilisateur non trouvé.',
           data: null,
         },
       });
-      expect(prismaService.employe.findUnique).toHaveBeenCalledWith({
-        where: { emailEmploye: email },
-      });
-      expect(prismaService.employe.update).not.toHaveBeenCalled();
-      expect(jwtService.sign).not.toHaveBeenCalled();
-    });
-  });
-
-  describe('resetPwd', () => {
-    const email = 'test@exemple.com';
-    const token = 'jwt_token';
-    const newPassword = 'newPassword123';
-    const codeTemp = '123456';
-    const employe = {
-      idEmploye: 1,
-      emailEmploye: email,
-      codeTemp,
-      codeTempExpires: new Date(Date.now() + 10 * 60 * 1000),
-      typeEmploye: 'Employe',
-      nomEmploye: 'Test Employe',
-    };
-
-    it('should reset password and clear temporary code', async () => {
-      mockJwtService.verify.mockReturnValue({ email });
-      mockPrismaService.employe.findUnique.mockResolvedValue(employe);
-      mockPrismaService.employe.update.mockResolvedValue(employe);
-      (bcrypt.hash as jest.Mock).mockResolvedValue('$2b$10$newhashedpassword');
-
-      const result = await authService.resetPwd(token, newPassword, email, codeTemp);
-
-      expect(jwtService.verify).toHaveBeenCalledWith(token);
-      expect(prismaService.employe.findUnique).toHaveBeenCalledWith({
-        where: { emailEmploye: email },
-      });
-      expect(bcrypt.hash).toHaveBeenCalledWith(newPassword, 10);
-      expect(prismaService.employe.update).toHaveBeenCalledWith({
-        where: { emailEmploye: email },
-        data: {
-          motDePasse: '$2b$10$newhashedpassword',
-          codeTemp: null,
-          codeTempExpires: null,
-        },
-      });
-      expect(result).toEqual({
-        success: true,
-        message: 'Mot de passe réinitialisé avec succès.',
-        data: null,
-      });
     });
 
-    it('should throw UnauthorizedException with ApiResponse if token is invalid', async () => {
-      mockJwtService.verify.mockReturnValue({ email: 'wrong@exemple.com' });
+    it('should throw error if password is invalid', async () => {
+      mockPrismaService.adminSysteme.findUnique.mockResolvedValue(mockAdmin);
+      (bcrypt.compare as jest.Mock).mockResolvedValue(false);
 
-      await expect(authService.resetPwd(token, newPassword, email, codeTemp)).rejects.toMatchObject({
+      await expect(service.login(loginDto)).rejects.toThrow(UnauthorizedException);
+      await expect(service.login(loginDto)).rejects.toMatchObject({
         response: {
           success: false,
-          message: 'Token invalide.',
+          message: 'Mot de passe incorrect.',
           data: null,
         },
       });
-      expect(jwtService.verify).toHaveBeenCalledWith(token);
-      expect(prismaService.employe.findUnique).not.toHaveBeenCalled();
     });
 
-    it('should throw BadRequestException with ApiResponse if code is invalid', async () => {
-      mockJwtService.verify.mockReturnValue({ email });
-      mockPrismaService.employe.findUnique.mockResolvedValue({
-        ...employe,
-        codeTemp: 'wrongCode',
-      });
+    it('should throw error if client has no password', async () => {
+      mockPrismaService.adminSysteme.findUnique.mockResolvedValue(null);
+      mockPrismaService.employe.findUnique.mockResolvedValue(null);
+      mockPrismaService.client.findUnique.mockResolvedValue({ ...mockClient, motDePasse: null });
 
-      await expect(authService.resetPwd(token, newPassword, email, codeTemp)).rejects.toMatchObject({
+      await expect(service.login({ ...loginDto, email: 'client@test.com' })).rejects.toThrow(UnauthorizedException);
+      await expect(service.login({ ...loginDto, email: 'client@test.com' })).rejects.toMatchObject({
         response: {
           success: false,
-          message: 'Code temporaire invalide.',
+          message: 'Aucun mot de passe défini pour cet utilisateur.',
           data: null,
         },
       });
-      expect(jwtService.verify).toHaveBeenCalledWith(token);
-      expect(prismaService.employe.findUnique).toHaveBeenCalledWith({
-        where: { emailEmploye: email },
-      });
     });
 
-    it('should throw BadRequestException with ApiResponse if code is expired', async () => {
-      mockJwtService.verify.mockReturnValue({ email });
-      mockPrismaService.employe.findUnique.mockResolvedValue({
-        ...employe,
-        codeTempExpires: new Date(Date.now() - 10 * 60 * 1000),
-      });
+    it('should throw error if role is not defined', async () => {
+      mockPrismaService.adminSysteme.findUnique.mockResolvedValue({ ...mockAdmin, role: undefined });
+      (bcrypt.compare as jest.Mock).mockResolvedValue(true);
 
-      await expect(authService.resetPwd(token, newPassword, email, codeTemp)).rejects.toMatchObject({
+      await expect(service.login(loginDto)).rejects.toThrow(UnauthorizedException);
+      await expect(service.login(loginDto)).rejects.toMatchObject({
         response: {
           success: false,
-          message: 'Code temporaire expiré.',
+          message: 'Rôle de l\'utilisateur non défini.',
           data: null,
         },
       });
-      expect(jwtService.verify).toHaveBeenCalledWith(token);
-      expect(prismaService.employe.findUnique).toHaveBeenCalledWith({
-        where: { emailEmploye: email },
-      });
-    });
-
-    it('should throw UnauthorizedException with ApiResponse if verification fails', async () => {
-      mockJwtService.verify.mockImplementation(() => {
-        throw new Error('Invalid token');
-      });
-
-      await expect(authService.resetPwd(token, newPassword, email, codeTemp)).rejects.toMatchObject({
-        response: {
-          success: false,
-          message: 'Réinitialisation impossible.',
-          data: null,
-        },
-      });
-      expect(jwtService.verify).toHaveBeenCalledWith(token);
     });
   });
 });

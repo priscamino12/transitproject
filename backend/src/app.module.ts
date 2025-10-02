@@ -17,6 +17,7 @@ import { SuperadminModule } from './superadmin/superadmin.module';
     EmployeModule,
     ClientModule,
     AuthModule,
+
     SuperadminModule,
   ],
   controllers: [AppController],
