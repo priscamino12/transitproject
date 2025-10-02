@@ -26,16 +26,27 @@ interface SidebarProps {
   onClose: () => void;
 }
 
+interface MenuItem {
+  id: string;
+  label: string;
+  icon: React.ComponentType<any>;
+  href: string;
+  submenu?: MenuItem[];
+}
+
 export function Sidebar({ isOpen, onClose }: SidebarProps) {
   const pathname = usePathname();
   const { t } = useLanguage();
-  const { user, logout } = useAuth();
+  const { logout } = useAuth();
   const [expandedMenus, setExpandedMenus] = useState<string[]>(["transport"]);
-const router = useRouter()
+  const router = useRouter();
+
+  // ⚡ Simule un utilisateur pour tester
+  const user = { type: "superadmin" }; // change ici: "SuperAdmin", "admin", "client"
+
   const handleLogout = () => {
-    logout(); 
+    logout?.();
     router.push("/auth");
-   
   };
 
   const toggleMenu = (menu: string) => {
@@ -44,95 +55,119 @@ const router = useRouter()
     );
   };
 
-  const menuItems = [
-    {
-      id: "dashboard",
-      label: t("dashboard"),
-      icon: FiHome,
-      href: "/admin/dashboard",
-    },
-    {
-      id: "clients",
-      label: t("clients"),
-      icon: FiUsers,
-      href: "/admin/clients",
-    },
-    // Affiche le menu "employes" seulement si c'est un administrateur
-    ...(user?.role === "Administrateur"
-      ? [
-          {
-            id: "employes",
-            label: t("employes"),
-            icon: FiUsers,
-            href: "/admin/employe",
-          },
-        ]
+  const getBasePath = (role: string) => {
+    switch (role.toLowerCase()) {
+      case "superadmin":
+        return "/management";
+      case "admin":
+        return "/management";
+      case "client":
+        return "/management";
+      default:
+        return "/";
+    }
+  };
+
+  const basePath = getBasePath(user.type);
+
+  const menuItems: MenuItem[] = [
+    // Dashboard seulement pour superadmin et admin
+    ...(user.type.toLowerCase() !== "client"
+      ? [{
+        id: "dashboard",
+        label: t("dashboard"),
+        icon: FiHome,
+        href: `${basePath}/dashboard`,
+      }]
       : []),
-    {
-      id: "transport",
-      label: t("transport"),
-      icon: FiTruck,
-      href: "/admin/transport",
-      submenu: [
+
+    // Menu employés UNIQUEMENT pour superadmin
+    ...(user.type.toLowerCase() === "superadmin"
+      ? [
         {
-          id: "aerial",
-          label: t("aerial"),
-          icon: FiNavigation,
-          href: "/admin/transport/aerial",
+          id: "employes",
+          label: t("employes"),
+          icon: FiUsers,
+          href: `${basePath}/employe`,
+        },
+      ]
+      : []),
+    // Si ce n'est pas un client → il voit tout le reste
+    ...(user.type.toLowerCase() !== "client"
+      ? [
+        {
+          id: "clients",
+          label: t("clients"),
+          icon: FiUsers,
+          href: `${basePath}/clients`,
         },
         {
-          id: "maritime",
-          label: t("maritime"),
-          icon: FiAnchor,
-          href: "/admin/transport/maritime",
+          id: "transport",
+          label: t("transport"),
+          icon: FiTruck,
+          href: `${basePath}/transport`,
+          submenu: [
+            {
+              id: "aerial",
+              label: t("aerial"),
+              icon: FiNavigation,
+              href: `${basePath}/transport/aerial`,
+            },
+            {
+              id: "maritime",
+              label: t("maritime"),
+              icon: FiAnchor,
+              href: `${basePath}/transport/maritime`,
+            },
+          ],
         },
-      ],
-    },
-    {
-      id: "transactions",
-      label: t("transactions"),
-      icon: FiFileText,
-      href: "/admin/transactions",
-    },
+        {
+          id: "transactions",
+          label: t("transactions"),
+          icon: FiFileText,
+          href: `${basePath}/transactions`,
+        },
+        {
+          id: "documents",
+          label: t("documents"),
+          icon: FiFolder,
+          href: `${basePath}/documents`,
+        },
+      ]
+      : []),
+
+
+
+    // Tout le monde (y compris client) a accès au tracking
     {
       id: "tracking",
       label: t("tracking"),
       icon: FiMapPin,
-      href: "/admin/tracking",
-    },
-    {
-      id: "documents",
-      label: t("documents"),
-      icon: FiFolder,
-      href: "/admin/documents",
+      href: `${basePath}/tracking`,
     },
   ];
 
+
+
   const bottomMenuItems = [
-    {
-      id: "settings",
-      label: t("settings"),
-      icon: FiSettings,
-      href: "/admin/settings",
-    },
-    {
-      id: "logout",
-      label: t("logout"),
-      icon: FiLogOut,
-      onClick: handleLogout,
-    },
+    { id: "settings", label: t("settings"), icon: FiSettings, href: `${basePath}/settings` },
+    { id: "logout", label: t("logout"), icon: FiLogOut, onClick: handleLogout },
   ];
 
   return (
     <>
-      {isOpen && <div className="fixed inset-0 bg-black/50 z-40 lg:hidden" onClick={onClose} />}
+      {isOpen && (
+        <div
+          data-testid="overlay"
+          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+          onClick={onClose}
+        />
+      )}
 
-      <div
-        className={cn(
-          "fixed left-0 top-0 h-full w-64 bg-sidebar border-r border-sidebar-border z-50 transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:z-auto",
-          isOpen ? "translate-x-0" : "-translate-x-full"
-        )}
-      >
+      <div className={cn(
+        "fixed left-0 top-0 h-full w-64 bg-sidebar border-r border-sidebar-border z-50 transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:z-auto",
+        isOpen ? "translate-x-0" : "-translate-x-full"
+      )}>
         <div className="flex flex-col h-full">
           {/* Logo */}
           <div className="p-6 border-b border-sidebar-border">
@@ -149,58 +184,39 @@ const router = useRouter()
 
           {/* Navigation */}
           <nav className="flex-1 p-4 space-y-2">
-            {menuItems.map((item) => (
+            {menuItems.map(item => (
               <div key={item.id}>
                 {item.submenu ? (
                   <div>
-                    <button
-                      onClick={() => toggleMenu(item.id)}
-                      className={cn(
-                        "w-full flex items-center justify-between px-3 py-2 rounded-lg text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors",
-                        pathname.startsWith(item.href) &&
-                          "bg-sidebar-primary text-sidebar-primary-foreground"
-                      )}
-                    >
+                    <button onClick={() => toggleMenu(item.id)} className={cn(
+                      "w-full flex items-center justify-between px-3 py-2 rounded-lg text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors",
+                      pathname.startsWith(item.href) && "bg-sidebar-primary text-sidebar-primary-foreground"
+                    )}>
                       <div className="flex items-center space-x-3">
                         <item.icon className="w-5 h-5" />
                         <span>{item.label}</span>
                       </div>
-                      {expandedMenus.includes(item.id) ? (
-                        <FiChevronDown className="w-4 h-4" />
-                      ) : (
-                        <FiChevronRight className="w-4 h-4" />
-                      )}
+                      {expandedMenus.includes(item.id) ? <FiChevronDown className="w-4 h-4" /> : <FiChevronRight className="w-4 h-4" />}
                     </button>
                     {expandedMenus.includes(item.id) && (
                       <div className="ml-6 mt-2 space-y-1">
-                        {item.submenu.map((subItem) => (
-                          <Link
-                            key={subItem.id}
-                            href={subItem.href}
-                            onClick={onClose}
-                            className={cn(
-                              "flex items-center space-x-3 px-3 py-2 rounded-lg text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors",
-                              pathname === subItem.href &&
-                                "bg-sidebar-primary text-sidebar-primary-foreground"
-                            )}
-                          >
-                            <subItem.icon className="w-4 h-4" />
-                            <span>{subItem.label}</span>
+                        {item.submenu.map(sub => (
+                          <Link key={sub.id} href={sub.href} onClick={onClose} className={cn(
+                            "flex items-center space-x-3 px-3 py-2 rounded-lg text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors",
+                            pathname === sub.href && "bg-sidebar-primary text-sidebar-primary-foreground"
+                          )}>
+                            <sub.icon className="w-4 h-4" />
+                            <span>{sub.label}</span>
                           </Link>
                         ))}
                       </div>
                     )}
                   </div>
                 ) : (
-                  <Link
-                    href={item.href}
-                    onClick={onClose}
-                    className={cn(
-                      "flex items-center space-x-3 px-3 py-2 rounded-lg text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors",
-                      pathname === item.href &&
-                        "bg-sidebar-primary text-sidebar-primary-foreground"
-                    )}
-                  >
+                  <Link href={item.href} onClick={onClose} className={cn(
+                    "flex items-center space-x-3 px-3 py-2 rounded-lg text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors",
+                    pathname === item.href && "bg-sidebar-primary text-sidebar-primary-foreground"
+                  )}>
                     <item.icon className="w-5 h-5" />
                     <span>{item.label}</span>
                   </Link>
@@ -211,33 +227,19 @@ const router = useRouter()
 
           {/* Bottom menu */}
           <div className="p-4 border-t border-sidebar-border space-y-2">
-            {bottomMenuItems.map((item) =>
+            {bottomMenuItems.map(item =>
               item.onClick ? (
-                <button
-                  key={item.id}
-                  onClick={() => {
-                    item.onClick?.();
-                    onClose();
-                  }}
-                  className={cn(
-                    "flex items-center space-x-3 px-3 py-2 w-full rounded-lg text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors",
-                    pathname === item.href && "bg-sidebar-primary text-sidebar-primary-foreground"
-                  )}
-                >
+                <button key={item.id} onClick={() => { item.onClick?.(); onClose(); }} className={cn(
+                  "flex items-center space-x-3 px-3 py-2 w-full rounded-lg text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors"
+                )}>
                   <item.icon className="w-5 h-5" />
                   <span>{item.label}</span>
                 </button>
               ) : (
-                <Link
-                  key={item.id}
-                  href={item.href!}
-                  onClick={onClose}
-                  className={cn(
-                    "flex items-center space-x-3 px-3 py-2 rounded-lg text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors",
-                    pathname === item.href &&
-                      "bg-sidebar-primary text-sidebar-primary-foreground"
-                  )}
-                >
+                <Link key={item.id} href={item.href!} onClick={onClose} className={cn(
+                  "flex items-center space-x-3 px-3 py-2 rounded-lg text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors",
+                  pathname === item.href && "bg-sidebar-primary text-sidebar-primary-foreground"
+                )}>
                   <item.icon className="w-5 h-5" />
                   <span>{item.label}</span>
                 </Link>

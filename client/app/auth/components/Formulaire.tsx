@@ -61,7 +61,7 @@ export default function Formulaire() {
         const decoded: any = jwtDecode(res.data.token);
         localStorage.setItem("userName", decoded.nom);
         localStorage.setItem("userType", decoded.type);
-        router.push("/admin/dashboard");
+        router.push("/management/dashboard");
       }
     } catch (error: any) {
       const msg = error.response?.data?.error || "Erreur lors de la réinitialisation";
@@ -86,7 +86,7 @@ export default function Formulaire() {
         const decoded: any = jwtDecode(res.data.token);
         localStorage.setItem("userName", decoded.nom);
         localStorage.setItem("userType", decoded.type);
-        router.push("/admin/dashboard");
+        router.push("/management/dashboard");
       }
     } catch (err: any) {
       toast.error(err.response?.data?.message  || "Erreur lors de la connexion");

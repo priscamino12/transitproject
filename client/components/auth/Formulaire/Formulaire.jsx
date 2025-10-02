@@ -95,7 +95,7 @@ const Formulaire = () => {
           localStorage.setItem("userName", decodedToken.nom);
           localStorage.setItem("userType", decodedToken.type);
 
-          navigate("/admin/dashboard");
+          navigate("/management/dashboard");
         }
       } catch (error) {
         const errorMessage =
@@ -144,7 +144,7 @@ const Formulaire = () => {
         localStorage.setItem("userName", decodedToken.nom);
         localStorage.setItem("userType", decodedToken.type);
 
-        navigate("/admin/dashboard");
+        navigate("/management/dashboard");
       }
     } catch (err) {
       if (err.response) {
