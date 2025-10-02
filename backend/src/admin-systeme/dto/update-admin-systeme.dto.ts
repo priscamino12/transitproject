@@ -1,13 +1,13 @@
 import { IsString, IsEmail, IsOptional } from 'class-validator';
 
-export class UpdateSuperAdminDto {
+export class UpdateAdminSystemeDto {
   @IsOptional()
   @IsString()
-  nomAdmin?: string;
+  nomAdminSysteme?: string;
 
   @IsOptional()
   @IsEmail()
-  emailAdmin?: string;
+  emailAdminSysteme?: string;
 
   @IsOptional()
   @IsString()
