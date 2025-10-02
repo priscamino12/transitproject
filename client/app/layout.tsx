@@ -24,15 +24,15 @@ export default function RootLayout({
   return (
     <html lang="fr" suppressHydrationWarning>
       <body className={`font-sans ${GeistSans.variable} ${GeistMono.variable}`}>
-         <AuthProvider>
-        <Suspense fallback={null}>
-          <LanguageProvider>
-            <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
-              {children}
-            </ThemeProvider>
-          </LanguageProvider>
-        </Suspense>
-        <Analytics />
+        <AuthProvider>
+          <Suspense fallback={null}>
+            <LanguageProvider>
+              <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
+                {children}
+              </ThemeProvider>
+            </LanguageProvider>
+          </Suspense>
+          <Analytics />
         </AuthProvider>
       </body>
     </html>

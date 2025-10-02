@@ -1,0 +1,4 @@
+ SUPABASES INFORMATION
+
+project name : transit_project
+database password : mySecurePassword123_0

@@ -2,17 +2,18 @@
 
 import { createContext, useContext, useEffect, useState, ReactNode } from "react"
 import { useRouter } from "next/navigation"
-import {jwtDecode} from "jwt-decode"
+import { jwtDecode } from "jwt-decode"
+import api from "@/app/axiosInstance"
+import { toast } from "react-toastify"
 
 interface User {
-  id: string
+  email: string
   nom: string
-  type: string
+  role: string
 }
 
 interface AuthContextType {
   user: User | null
-  token: string | null
   login: (token: string) => void
   logout: () => void
   loading: boolean
@@ -22,40 +23,44 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null)
-  const [token, setToken] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const router = useRouter()
 
   useEffect(() => {
-    const t = localStorage.getItem("token")
-    if (t) {
+    const use_r: any = localStorage.getItem("user")
+    if (use_r) {
       try {
-        const decoded: any = jwtDecode(t)
-        setUser({ id: decoded.id, nom: decoded.nom, type: decoded.type })
-        setToken(t)
+        setUser({ email: use_r.id, nom: use_r.nom, role: use_r.role })
       } catch {
-        localStorage.removeItem("token")
+        localStorage.removeItem("user")
       }
     }
     setLoading(false)
   }, [])
 
-  const login = (t: string) => {
-    localStorage.setItem("token", t)
-    const decoded: any = jwtDecode(t)
-    setUser({ id: decoded.id, nom: decoded.nom, type: decoded.type })
-    setToken(t)
+  const login = (user: string) => {
+    const use_r: any = localStorage.setItem("user", user)
+    setUser({ nom: use_r.nom, role: use_r.role, email: use_r.email })
   }
 
-  const logout = () => {
-    localStorage.removeItem("token")
-    setUser(null)
-    setToken(null)
-    router.push("/auth")
+  const logout = async () => {
+    try {
+      const res = await api.post("/auth/logout");
+      if (res.status === 200) {
+        localStorage.removeItem("user")
+      }
+      router.push("/auth")
+    } catch (err: any) {
+      toast.error("le serveur est en panne", {
+        position: "top-right",
+        autoClose: 3000,
+      });
+    }
+
   }
 
   return (
-    <AuthContext.Provider value={{ user, token, login, logout, loading }}>
+    <AuthContext.Provider value={{ user, login, logout, loading }}>
       {children}
     </AuthContext.Provider>
   )

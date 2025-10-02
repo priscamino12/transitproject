@@ -13,7 +13,7 @@ SuiviHAWB.init(
       type: DataTypes.STRING,
       allowNull: false,
       references: {
-        model: HAWB,
+        model: HAWB, 
         key: "numHAWB",
       },
       onDelete: "CASCADE",

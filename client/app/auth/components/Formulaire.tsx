@@ -89,7 +89,7 @@ export default function Formulaire() {
         router.push("/admin/dashboard");
       }
     } catch (err: any) {
-      toast.error(err.response?.data?.error || "Erreur lors de la connexion");
+      toast.error(err.response?.data?.message  || "Erreur lors de la connexion");
     }
   };
 

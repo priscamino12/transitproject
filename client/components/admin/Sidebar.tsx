@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   FiHome,
   FiUsers,
@@ -31,10 +31,11 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
   const { t } = useLanguage();
   const { user, logout } = useAuth();
   const [expandedMenus, setExpandedMenus] = useState<string[]>(["transport"]);
-
+const router = useRouter()
   const handleLogout = () => {
-    logout(); // supprime token / infos utilisateur
-    window.location.href = "/auth"; // redirige vers login
+    logout(); 
+    router.push("/auth");
+   
   };
 
   const toggleMenu = (menu: string) => {
@@ -57,7 +58,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
       href: "/admin/clients",
     },
     // Affiche le menu "employes" seulement si c'est un administrateur
-    ...(user?.type === "Administrateur"
+    ...(user?.role === "Administrateur"
       ? [
           {
             id: "employes",
