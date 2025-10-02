@@ -3,20 +3,22 @@ generator client {
 }
 
 datasource db {
-  provider  = "postgresql"
-  url       = env("DATABASE_URL")
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 model AdminSysteme {
-  idAdmin       Int       @id @default(autoincrement())
-  nomAdmin      String
-  emailAdmin    String    @unique
-  motDePasse    String
-  role          String    @default("SuperAdmin")
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  idAdminSysteme    Int      @id @default(autoincrement())
+  nomAdminSysteme   String
+  emailAdminSysteme String   @unique
+  motDePasse String
+  role       String   @default("SuperAdmin")
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
   @@map("admin_systeme")
 }
+
 enum StatusAbonnement {
   ACTIF
   INACTIF
@@ -30,223 +32,223 @@ enum DureeAbonnement {
 }
 
 model TypeAcces {
-  id              Int           @id @default(autoincrement())
-  nom             String        @unique // SIMPLE, PREMIUM, ENTERPRISE
-  prixBase        Float         // prix de base pour 1 mois
-  createdAt       DateTime      @default(now())
-  updatedAt       DateTime      @updatedAt
-  abonnements     Abonnement[]
-  entreprises     Entreprise[]
+  id          Int          @id @default(autoincrement())
+  nom         String       @unique // SIMPLE, PREMIUM, ENTERPRISE
+  prixBase    Float // prix de base pour 1 mois
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  abonnements Abonnement[]
+  entreprises Entreprise[]
 
   @@map("type_acces")
 }
 
 model Abonnement {
-  id                 Int           @id @default(autoincrement())
-  typeAccesId        Int
-  typeAcces          TypeAcces     @relation(fields: [typeAccesId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  duree              DureeAbonnement
-  reductionPourcentage Float        // ex : 0.05 = 5%
-  createdAt          DateTime      @default(now())
-  updatedAt          DateTime      @updatedAt
-  paiements          Paiement[]
+  idAbonnement                  Int             @id @default(autoincrement())
+  typeAccesId          Int
+  typeAcces            TypeAcces       @relation(fields: [typeAccesId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  duree                DureeAbonnement
+  reductionPourcentage Float // ex : 0.05 = 5%
+  createdAt            DateTime        @default(now())
+  updatedAt            DateTime        @updatedAt
+  paiements            Paiement[]
 
   @@map("abonnement")
 }
 
 model ModePaiement {
-  id        Int       @id @default(autoincrement())
-  nom       String    @unique
-  frais     Float?    // exemple : frais fixe ou %
-  actif     Boolean   @default(true)
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  id        Int        @id @default(autoincrement())
+  nom       String     @unique
+  frais     Float? // exemple : frais fixe ou %
+  actif     Boolean    @default(true)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
   paiements Paiement[]
 
   @@map("mode_paiement")
 }
 
 model Paiement {
-  id                Int           @id @default(autoincrement())
-  abonnementId       Int
-  abonnement        Abonnement    @relation(fields: [abonnementId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  entrepriseId      Int
-  entreprise        Entreprise    @relation(fields: [entrepriseId], references: [idEntreprise], onDelete: Cascade, onUpdate: Cascade)
-  modePaiementId    Int
-  modePaiement      ModePaiement  @relation(fields: [modePaiementId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  montant           Float
-  datePaiement      DateTime      @default(now())
-  createdAt         DateTime      @default(now())
-  updatedAt         DateTime      @updatedAt
+  id             Int          @id @default(autoincrement())
+  abonnementId   Int
+  abonnement     Abonnement   @relation(fields: [abonnementId], references: [idAbonnement], onDelete: Cascade, onUpdate: Cascade)
+  entrepriseId   Int
+  entreprise     Entreprise   @relation(fields: [entrepriseId], references: [idEntreprise], onDelete: Cascade, onUpdate: Cascade)
+  modePaiementId Int
+  modePaiement   ModePaiement @relation(fields: [modePaiementId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  montant        Float
+  datePaiement   DateTime     @default(now())
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
 
   @@map("paiement")
 }
 
 model Entreprise {
-  idEntreprise       Int           @id @default(autoincrement())
-  nomEntreprise      String
-  emailEntreprise    String?       @unique
-  telEntreprise      String?
-  adresseEntreprise  String?
-  typeAccesId        Int
-  typeAcces          TypeAcces     @relation(fields: [typeAccesId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  statusAbonnement   StatusAbonnement @default(ACTIF)
+  idEntreprise        Int              @id @default(autoincrement())
+  nomEntreprise       String
+  logoEntreprise      String? // URL du logo
+  adresseEntreprise   String?
+  nif                 String          @unique
+  statJuridique       String?
+  typeAccesId         Int
+  typeAcces           TypeAcces        @relation(fields: [typeAccesId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  statusAbonnement    StatusAbonnement @default(ACTIF)
   dateDebutAbonnement DateTime?
-  dateFinAbonnement  DateTime?
-  montantAbonnement  Float?        // dernier paiement
-  createdAt          DateTime      @default(now())
-  updatedAt          DateTime      @updatedAt
-  employes           Employe[]
-  clients            Client[]
-  transAeriennes     TransAerienne[]
-  transMaritimes     TransMaritime[]
-  mawbs              MAWB[]
-  mbls               MBL[]
-  conteneurs         Conteneur[]
-  hawbs              HAWB[]
-  hbls               HBL[]
-  suiviHAWBs         SuiviHAWB[]
-  suiviHBLs          SuiviHBL[]
-  paiements          Paiement[]
+  dateFinAbonnement   DateTime?
+  createdAt           DateTime         @default(now())
+  updatedAt           DateTime         @updatedAt
+  employes            Employe[]
+  clients             Client[]
+  transAeriennes      TransAerienne[]
+  transMaritimes      TransMaritime[]
+  mawbs               MAWB[]
+  mbls                MBL[]
+  conteneurs          Conteneur[]
+  hawbs               HAWB[]
+  hbls                HBL[]
+  suiviHAWBs          SuiviHAWB[]
+  suiviHBLs           SuiviHBL[]
+  paiements           Paiement[]
 
   @@map("entreprise")
 }
 
 model Employe {
-  idEmploye     Int       @id @default(autoincrement())
-  nomEmploye    String
-  emailEmploye  String    @unique
-  motDePasse    String
-  role          String    @default("admin") // Enum simulé
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  idEntreprise  Int
-  entreprise    Entreprise @relation(fields: [idEntreprise], references: [idEntreprise], onDelete: Cascade, onUpdate: Cascade)
-  mawbsCreated  MAWB[]    @relation("Creator")
-  mawbsModified MAWB[]    @relation("Modifier")
-  hblsCreated   HBL[]     @relation("Creator")
-  hblsModified  HBL[]     @relation("Modifier")
-  hawbsCreated  HAWB[]    @relation("Creator")
-  hawbsModified HAWB[]    @relation("Modifier")
-  mblsCreated   MBL[]     @relation("Creator")
-  mblsModified  MBL[]     @relation("Modifier")
-  transMaritimeCreated TransMaritime[] @relation("Creator")
+  idEmploye             Int             @id @default(autoincrement())
+  nomEmploye            String
+  emailEmploye          String          @unique
+  motDePasse            String
+  role                  String          @default("admin") // Enum simulé
+  createdAt             DateTime        @default(now())
+  updatedAt             DateTime        @updatedAt
+  idEntreprise          Int
+  entreprise            Entreprise      @relation(fields: [idEntreprise], references: [idEntreprise], onDelete: Cascade, onUpdate: Cascade)
+  mawbsCreated          MAWB[]          @relation("Creator")
+  mawbsModified         MAWB[]          @relation("Modifier")
+  hblsCreated           HBL[]           @relation("Creator")
+  hblsModified          HBL[]           @relation("Modifier")
+  hawbsCreated          HAWB[]          @relation("Creator")
+  hawbsModified         HAWB[]          @relation("Modifier")
+  mblsCreated           MBL[]           @relation("Creator")
+  mblsModified          MBL[]           @relation("Modifier")
+  transMaritimeCreated  TransMaritime[] @relation("Creator")
   transMaritimeModified TransMaritime[] @relation("Modifier")
-  transAerienneCreated TransAerienne[] @relation("Creator")
+  transAerienneCreated  TransAerienne[] @relation("Creator")
   transAerienneModified TransAerienne[] @relation("Modifier")
-  clientCreated Client[]  @relation("Creator")
-  clientModified Client[] @relation("Modifier")
-  codeTemp       String?   // Champ optionnel pour le code temporaire
-  codeTempExpires DateTime? // Date d'expiration du code temporaire
+  clientCreated         Client[]        @relation("Creator")
+  clientModified        Client[]        @relation("Modifier")
+  codeTemp              String? // Champ optionnel pour le code temporaire
+  codeTempExpires       DateTime? // Date d'expiration du code temporaire
 
   @@map("employe")
 }
 
 model Client {
-  idClient      Int       @id @default(autoincrement())
-  nomClient     String
-  emailClient   String    @unique
-  motDePasse    String?    
-  role          String    @default("client")
-  telClient     String?   @unique
-  adresseClient String?
-  CINClient     String    @unique
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  idEntreprise  Int
-  entreprise    Entreprise @relation(fields: [idEntreprise], references: [idEntreprise], onDelete: Cascade, onUpdate: Cascade)
-  creerPar      Int
-  creator       Employe   @relation("Creator", fields: [creerPar], references: [idEmploye], onDelete: Cascade, onUpdate: Cascade)
-  modifierPar   Int?
-  modifier      Employe?  @relation("Modifier", fields: [modifierPar], references: [idEmploye], onDelete: Cascade, onUpdate: Cascade)
-  expediteurHAWB HAWB[]   @relation("Expediteur")
-  destinataireHAWB HAWB[] @relation("Destinataire")
-  expediteurHBL HBL[]    @relation("Expediteur")
-  destinataireHBL HBL[]  @relation("Destinataire")
+  idClient         Int        @id @default(autoincrement())
+  nomClient        String
+  emailClient      String     @unique
+  motDePasse       String?
+  role             String     @default("client")
+  telClient        String?    @unique
+  adresseClient    String?
+  CINClient        String     @unique
+  createdAt        DateTime   @default(now())
+  updatedAt        DateTime   @updatedAt
+  idEntreprise     Int
+  entreprise       Entreprise @relation(fields: [idEntreprise], references: [idEntreprise], onDelete: Cascade, onUpdate: Cascade)
+  creerPar         Int
+  creator          Employe    @relation("Creator", fields: [creerPar], references: [idEmploye], onDelete: Cascade, onUpdate: Cascade)
+  modifierPar      Int?
+  modifier         Employe?   @relation("Modifier", fields: [modifierPar], references: [idEmploye], onDelete: Cascade, onUpdate: Cascade)
+  expediteurHAWB   HAWB[]     @relation("Expediteur")
+  destinataireHAWB HAWB[]     @relation("Destinataire")
+  expediteurHBL    HBL[]      @relation("Expediteur")
+  destinataireHBL  HBL[]      @relation("Destinataire")
 
   @@map("client")
 }
 
 model TransAerienne {
-  idTransAerienne  Int       @id @default(autoincrement())
-  numVol           String    @unique
-  nomCompagnie     String
-  dateChargement   DateTime
-  paysChargement   String
-  villeChargement  String
-  paysDechargement String
+  idTransAerienne   Int        @id @default(autoincrement())
+  numVol            String     @unique
+  nomCompagnie      String
+  dateChargement    DateTime
+  paysChargement    String
+  villeChargement   String
+  paysDechargement  String
   villeDechargement String?
-  idEntreprise     Int
-  entreprise       Entreprise @relation(fields: [idEntreprise], references: [idEntreprise], onDelete: Cascade, onUpdate: Cascade)
-  creerPar         Int
-  creator          Employe   @relation("Creator", fields: [creerPar], references: [idEmploye], onDelete: Cascade, onUpdate: Cascade)
-  modifierPar      Int?
-  modifier         Employe?  @relation("Modifier", fields: [modifierPar], references: [idEmploye], onDelete: Cascade, onUpdate: Cascade)
-  createdAt        DateTime  @default(now())
-  updatedAt        DateTime  @updatedAt
-  mawbs            MAWB[]
+  idEntreprise      Int
+  entreprise        Entreprise @relation(fields: [idEntreprise], references: [idEntreprise], onDelete: Cascade, onUpdate: Cascade)
+  creerPar          Int
+  creator           Employe    @relation("Creator", fields: [creerPar], references: [idEmploye], onDelete: Cascade, onUpdate: Cascade)
+  modifierPar       Int?
+  modifier          Employe?   @relation("Modifier", fields: [modifierPar], references: [idEmploye], onDelete: Cascade, onUpdate: Cascade)
+  createdAt         DateTime   @default(now())
+  updatedAt         DateTime   @updatedAt
+  mawbs             MAWB[]
 
   @@map("trans_aerienne")
 }
 
 model TransMaritime {
-  idTransMaritime  Int       @id @default(autoincrement())
-  numIMO           String    @unique
-  armateur         String
-  nomNavire        String
-  dateChargement   DateTime
-  paysChargement   String
-  villeChargement  String
-  paysDechargement String
+  idTransMaritime   Int        @id @default(autoincrement())
+  numIMO            String     @unique
+  armateur          String
+  nomNavire         String
+  dateChargement    DateTime
+  paysChargement    String
+  villeChargement   String
+  paysDechargement  String
   villeDechargement String?
-  idEntreprise     Int
-  entreprise       Entreprise @relation(fields: [idEntreprise], references: [idEntreprise], onDelete: Cascade, onUpdate: Cascade)
-  creerPar         Int
-  creator          Employe   @relation("Creator", fields: [creerPar], references: [idEmploye], onDelete: Cascade, onUpdate: Cascade)
-  modifierPar      Int?
-  modifier         Employe?  @relation("Modifier", fields: [modifierPar], references: [idEmploye], onDelete: Cascade, onUpdate: Cascade)
-  createdAt        DateTime  @default(now())
-  updatedAt        DateTime  @updatedAt
-  mbls             MBL[]
+  idEntreprise      Int
+  entreprise        Entreprise @relation(fields: [idEntreprise], references: [idEntreprise], onDelete: Cascade, onUpdate: Cascade)
+  creerPar          Int
+  creator           Employe    @relation("Creator", fields: [creerPar], references: [idEmploye], onDelete: Cascade, onUpdate: Cascade)
+  modifierPar       Int?
+  modifier          Employe?   @relation("Modifier", fields: [modifierPar], references: [idEmploye], onDelete: Cascade, onUpdate: Cascade)
+  createdAt         DateTime   @default(now())
+  updatedAt         DateTime   @updatedAt
+  mbls              MBL[]
 
   @@map("trans_maritime")
 }
 
 model MAWB {
-  idMAWB           Int              @id @default(autoincrement())
-  numMAWB          String           @unique
+  idMAWB           Int           @id @default(autoincrement())
+  numMAWB          String        @unique
   idTransport      Int
   idEntreprise     Int
-  entreprise       Entreprise       @relation(fields: [idEntreprise], references: [idEntreprise], onDelete: Cascade, onUpdate: Cascade)
-  transport        TransAerienne    @relation(fields: [idTransport], references: [idTransAerienne], onDelete: Cascade, onUpdate: Cascade)
+  entreprise       Entreprise    @relation(fields: [idEntreprise], references: [idEntreprise], onDelete: Cascade, onUpdate: Cascade)
+  transport        TransAerienne @relation(fields: [idTransport], references: [idTransAerienne], onDelete: Cascade, onUpdate: Cascade)
   dateEmission     DateTime
   dateArrivePrevue DateTime?
   creerPar         Int
-  creator          Employe          @relation("Creator", fields: [creerPar], references: [idEmploye], onDelete: Cascade, onUpdate: Cascade)
+  creator          Employe       @relation("Creator", fields: [creerPar], references: [idEmploye], onDelete: Cascade, onUpdate: Cascade)
   modifierPar      Int?
-  modifier         Employe?         @relation("Modifier", fields: [modifierPar], references: [idEmploye], onDelete: Cascade, onUpdate: Cascade)
-  createdAt        DateTime         @default(now())
-  updatedAt        DateTime         @updatedAt
+  modifier         Employe?      @relation("Modifier", fields: [modifierPar], references: [idEmploye], onDelete: Cascade, onUpdate: Cascade)
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
   hawbs            HAWB[]
 
   @@map("mawb")
 }
 
 model MBL {
-  idMBL            Int              @id @default(autoincrement())
-  numMBL           String           @unique
+  idMBL            Int           @id @default(autoincrement())
+  numMBL           String        @unique
   idTransport      Int
   idEntreprise     Int
-  entreprise       Entreprise       @relation(fields: [idEntreprise], references: [idEntreprise], onDelete: Cascade, onUpdate: Cascade)
-  transport        TransMaritime    @relation(fields: [idTransport], references: [idTransMaritime], onDelete: Cascade, onUpdate: Cascade)
+  entreprise       Entreprise    @relation(fields: [idEntreprise], references: [idEntreprise], onDelete: Cascade, onUpdate: Cascade)
+  transport        TransMaritime @relation(fields: [idTransport], references: [idTransMaritime], onDelete: Cascade, onUpdate: Cascade)
   dateEmission     DateTime
   dateArrivePrevue DateTime
   creerPar         Int
-  creator          Employe          @relation("Creator", fields: [creerPar], references: [idEmploye], onDelete: Cascade, onUpdate: Cascade)
+  creator          Employe       @relation("Creator", fields: [creerPar], references: [idEmploye], onDelete: Cascade, onUpdate: Cascade)
   modifierPar      Int?
-  modifier         Employe?         @relation("Modifier", fields: [modifierPar], references: [idEmploye], onDelete: Cascade, onUpdate: Cascade)
-  createdAt        DateTime         @default(now())
-  updatedAt        DateTime         @updatedAt
+  modifier         Employe?      @relation("Modifier", fields: [modifierPar], references: [idEmploye], onDelete: Cascade, onUpdate: Cascade)
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
   conteneurs       Conteneur[]
   hbls             HBL[]
 
@@ -254,50 +256,50 @@ model MBL {
 }
 
 model Conteneur {
-  idConteneur   Int       @id @default(autoincrement())
+  idConteneur   Int        @id @default(autoincrement())
   numConteneur  String
   typeConteneur String
   numPlomb      String
   numMBL        String
   idEntreprise  Int
   entreprise    Entreprise @relation(fields: [idEntreprise], references: [idEntreprise], onDelete: Cascade, onUpdate: Cascade)
-  mbl           MBL       @relation(fields: [numMBL], references: [numMBL], onDelete: Cascade, onUpdate: Cascade)
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  mbl           MBL        @relation(fields: [numMBL], references: [numMBL], onDelete: Cascade, onUpdate: Cascade)
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
 
   @@map("conteneur")
 }
 
 model HAWB {
-  idHAWB         Int       @id @default(autoincrement())
-  numHAWB        String    @unique
+  idHAWB         Int         @id @default(autoincrement())
+  numHAWB        String      @unique
   nbColis        Int
   poid           Float
   volume         Float
   description    String
   idMAWB         Int
   idEntreprise   Int
-  entreprise     Entreprise @relation(fields: [idEntreprise], references: [idEntreprise], onDelete: Cascade, onUpdate: Cascade)
-  mawb           MAWB      @relation(fields: [idMAWB], references: [idMAWB], onDelete: Cascade, onUpdate: Cascade)
+  entreprise     Entreprise  @relation(fields: [idEntreprise], references: [idEntreprise], onDelete: Cascade, onUpdate: Cascade)
+  mawb           MAWB        @relation(fields: [idMAWB], references: [idMAWB], onDelete: Cascade, onUpdate: Cascade)
   dateEmission   DateTime
   idExpediteur   Int
-  clientExp      Client    @relation("Expediteur", fields: [idExpediteur], references: [idClient], onDelete: Cascade, onUpdate: Cascade)
+  clientExp      Client      @relation("Expediteur", fields: [idExpediteur], references: [idClient], onDelete: Cascade, onUpdate: Cascade)
   idDestinataire Int
-  clientDest     Client    @relation("Destinataire", fields: [idDestinataire], references: [idClient], onDelete: Cascade, onUpdate: Cascade)
+  clientDest     Client      @relation("Destinataire", fields: [idDestinataire], references: [idClient], onDelete: Cascade, onUpdate: Cascade)
   creerPar       Int
-  creator        Employe   @relation("Creator", fields: [creerPar], references: [idEmploye], onDelete: Cascade, onUpdate: Cascade)
+  creator        Employe     @relation("Creator", fields: [creerPar], references: [idEmploye], onDelete: Cascade, onUpdate: Cascade)
   modifierPar    Int?
-  modifier       Employe?  @relation("Modifier", fields: [modifierPar], references: [idEmploye], onDelete: Cascade, onUpdate: Cascade)
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
+  modifier       Employe?    @relation("Modifier", fields: [modifierPar], references: [idEmploye], onDelete: Cascade, onUpdate: Cascade)
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
   suiviHAWBs     SuiviHAWB[]
 
   @@map("hawb")
 }
 
 model HBL {
-  idHBL          Int       @id @default(autoincrement())
-  numHBL         String    @unique
+  idHBL          Int        @id @default(autoincrement())
+  numHBL         String     @unique
   nbColis        Int
   poid           Float
   volume         Float
@@ -305,54 +307,54 @@ model HBL {
   idMBL          Int
   idEntreprise   Int
   entreprise     Entreprise @relation(fields: [idEntreprise], references: [idEntreprise], onDelete: Cascade, onUpdate: Cascade)
-  mbl            MBL       @relation(fields: [idMBL], references: [idMBL], onDelete: Cascade, onUpdate: Cascade)
+  mbl            MBL        @relation(fields: [idMBL], references: [idMBL], onDelete: Cascade, onUpdate: Cascade)
   dateEmission   DateTime
   idExpediteur   Int
-  clientExp      Client    @relation("Expediteur", fields: [idExpediteur], references: [idClient], onDelete: Cascade, onUpdate: Cascade)
+  clientExp      Client     @relation("Expediteur", fields: [idExpediteur], references: [idClient], onDelete: Cascade, onUpdate: Cascade)
   idDestinataire Int
-  clientDest     Client    @relation("Destinataire", fields: [idDestinataire], references: [idClient], onDelete: Cascade, onUpdate: Cascade)
+  clientDest     Client     @relation("Destinataire", fields: [idDestinataire], references: [idClient], onDelete: Cascade, onUpdate: Cascade)
   creerPar       Int
-  creator        Employe   @relation("Creator", fields: [creerPar], references: [idEmploye], onDelete: Cascade, onUpdate: Cascade)
+  creator        Employe    @relation("Creator", fields: [creerPar], references: [idEmploye], onDelete: Cascade, onUpdate: Cascade)
   modifierPar    Int?
-  modifier       Employe?  @relation("Modifier", fields: [modifierPar], references: [idEmploye], onDelete: Cascade, onUpdate: Cascade)
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
+  modifier       Employe?   @relation("Modifier", fields: [modifierPar], references: [idEmploye], onDelete: Cascade, onUpdate: Cascade)
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
   suiviHBLs      SuiviHBL[]
 
   @@map("hbl")
 }
 
 model SuiviHAWB {
-  idSuiviHAWB  Int       @id @default(autoincrement())
+  idSuiviHAWB  Int        @id @default(autoincrement())
   numHAWB      String
   idEntreprise Int
   entreprise   Entreprise @relation(fields: [idEntreprise], references: [idEntreprise], onDelete: Cascade, onUpdate: Cascade)
-  hawb         HAWB      @relation(fields: [numHAWB], references: [numHAWB], onDelete: Cascade, onUpdate: Cascade)
+  hawb         HAWB       @relation(fields: [numHAWB], references: [numHAWB], onDelete: Cascade, onUpdate: Cascade)
   etape        String
   dateEtape    DateTime
   status       String
   commentaire  String?
   creerPar     Int
   modifierPar  Int?
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
 
   @@unique([numHAWB, etape])
   @@map("suivi_hawb")
 }
 
 model SuiviHBL {
-  idSuiviHBL   Int       @id @default(autoincrement())
+  idSuiviHBL   Int        @id @default(autoincrement())
   numHBL       String
   idEntreprise Int
   entreprise   Entreprise @relation(fields: [idEntreprise], references: [idEntreprise], onDelete: Cascade, onUpdate: Cascade)
-  hbl          HBL       @relation(fields: [numHBL], references: [numHBL], onDelete: Cascade, onUpdate: Cascade)
+  hbl          HBL        @relation(fields: [numHBL], references: [numHBL], onDelete: Cascade, onUpdate: Cascade)
   etape        String
   dateEtape    DateTime
   status       String
   commentaire  String?
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
 
   @@unique([numHBL, etape])
   @@map("suivi_hbl")

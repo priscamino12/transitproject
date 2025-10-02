@@ -1,4 +1,4 @@
-import { IsString, IsEmail, IsOptional, IsInt } from 'class-validator';
+import { IsString, IsEmail, IsInt, IsOptional } from 'class-validator';
 
 export class CreateEmployeDto {
   @IsString()
@@ -10,8 +10,8 @@ export class CreateEmployeDto {
   @IsString()
   motDePasse!: string;
 
-  @IsOptional()
   @IsString()
+  @IsOptional()
   role?: string;
 
   @IsInt()

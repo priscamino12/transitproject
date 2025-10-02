@@ -22,7 +22,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     let user: any;
 
     if (payload.role === 'SuperAdmin') {
-      user = await this.prisma.adminSysteme.findUnique({ where: { idAdmin: payload.sub } });
+      user = await this.prisma.adminSysteme.findUnique({ where: { idAdminSysteme: payload.sub } });
     } else if (payload.role === 'admin' || payload.role === 'employe') {
       user = await this.prisma.employe.findUnique({ where: { idEmploye: payload.sub } });
     } else if (payload.role === 'client') {

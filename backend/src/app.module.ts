@@ -6,6 +6,8 @@ import { ConfigModule } from '@nestjs/config';
 import { EmployeModule } from './employe/employe.module';
 import { ClientModule } from './client/client.module';
 import { AuthModule } from './auth/auth.module';
+import { EntrepriseModule } from './entreprise/entreprise.module';
+import { AdminSystemeModule } from './admin-systeme/admin-systeme.module';
 
 
 
@@ -16,6 +18,8 @@ import { AuthModule } from './auth/auth.module';
     EmployeModule,
     ClientModule,
     AuthModule,
+    EntrepriseModule,
+    AdminSystemeModule
 
   ],
   controllers: [AppController],
