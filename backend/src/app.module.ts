@@ -20,8 +20,6 @@ import { AdminSystemeModule } from './admin-systeme/admin-systeme.module';
     AuthModule,
     EntrepriseModule,
     AdminSystemeModule
-
-    SuperadminModule,
   ],
   controllers: [AppController],
   providers: [AppService],
