@@ -1,155 +1,76 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { ApiResponse } from '../types/api-response';
-import { Entreprise } from '@prisma/client';
-import { CreateEntrepriseDto, UpdateEntrepriseDto } from './entreprise.dto';
+import { CreateEntrepriseDto } from './dto/create-entreprise.dto';
+import { UpdateEntrepriseDto } from './dto/update-entreprise.dto';
+import { successResponse, errorResponse } from '@/utils/response.utils';
 
 @Injectable()
 export class EntrepriseService {
   constructor(private prisma: PrismaService) {}
 
-  async create(createEntrepriseDto: CreateEntrepriseDto): Promise<ApiResponse<Entreprise>> {
+  async create(dto: CreateEntrepriseDto) {
     try {
-      // Vérifier si le type d'accès existe
-      const typeAcces = await this.prisma.typeAcces.findUnique({
-        where: { id: createEntrepriseDto.typeAccesId },
-      });
-      if (!typeAcces) {
-        return {
-          success: false,
-          message: 'Type d\'accès non trouvé',
-          data: null,
-        };
-      }
-
       const entreprise = await this.prisma.entreprise.create({
-        data: createEntrepriseDto,
+        data: {
+          ...dto,
+          statusAbonnement: 'ACTIF',
+          dateDebutAbonnement: new Date(),
+        },
       });
-      return {
-        success: true,
-        message: 'Entreprise créée avec succès',
-        data: entreprise,
-      };
+      return successResponse('Entreprise créée avec succès', entreprise, 201);
     } catch (error: any) {
-      return {
-        success: false,
-        message: `Erreur lors de la création de l'entreprise: ${error.message}`,
-        data: null,
-      };
+      return errorResponse(`Erreur lors de la création: ${error.message}`, null, 500);
     }
   }
 
-  async findAll(): Promise<ApiResponse<Entreprise[]>> {
+  async findAll() {
     try {
-      const entreprises = await this.prisma.entreprise.findMany();
-      return {
-        success: true,
-        message: 'Entreprises récupérées avec succès',
-        data: entreprises,
-      };
+      const entreprises = await this.prisma.entreprise.findMany({
+        include: { typeAcces: true, paiements: true },
+      });
+      return successResponse('Liste des entreprises récupérée', entreprises);
     } catch (error: any) {
-      return {
-        success: false,
-        message: `Erreur lors de la récupération des entreprises: ${error.message}`,
-        data: null,
-      };
+      return errorResponse(`Erreur lors de la récupération: ${error.message}`, null, 500);
     }
   }
 
-  async findOne(id: number): Promise<ApiResponse<Entreprise>> {
+  async findOne(id: number) {
     try {
       const entreprise = await this.prisma.entreprise.findUnique({
         where: { idEntreprise: id },
+        include: { typeAcces: true, paiements: true },
       });
+
       if (!entreprise) {
-        return {
-          success: false,
-          message: 'Entreprise non trouvée',
-          data: null,
-        };
+        return errorResponse('Entreprise non trouvée', null, 404);
       }
-      return {
-        success: true,
-        message: 'Entreprise récupérée avec succès',
-        data: entreprise,
-      };
+
+      return successResponse('Entreprise trouvée', entreprise);
     } catch (error: any) {
-      return {
-        success: false,
-        message: `Erreur lors de la récupération de l'entreprise: ${error.message}`,
-        data: null,
-      };
+      return errorResponse(`Erreur lors de la récupération: ${error.message}`, null, 500);
     }
   }
 
-  async update(id: number, updateEntrepriseDto: UpdateEntrepriseDto): Promise<ApiResponse<Entreprise>> {
+  async update(id: number, dto: UpdateEntrepriseDto) {
     try {
-      const entreprise = await this.prisma.entreprise.findUnique({
+      const entreprise = await this.prisma.entreprise.update({
         where: { idEntreprise: id },
+        data: { ...dto },
       });
-      if (!entreprise) {
-        return {
-          success: false,
-          message: 'Entreprise non trouvée',
-          data: null,
-        };
-      }
-      if (updateEntrepriseDto.typeAccesId) {
-        const typeAcces = await this.prisma.typeAcces.findUnique({
-          where: { id: updateEntrepriseDto.typeAccesId },
-        });
-        if (!typeAcces) {
-          return {
-            success: false,
-            message: 'Type d\'accès non trouvé',
-            data: null,
-          };
-        }
-      }
-      const updatedEntreprise = await this.prisma.entreprise.update({
-        where: { idEntreprise: id },
-        data: updateEntrepriseDto,
-      });
-      return {
-        success: true,
-        message: 'Entreprise mise à jour avec succès',
-        data: updatedEntreprise,
-      };
+      return successResponse('Entreprise mise à jour avec succès', entreprise);
     } catch (error: any) {
-      return {
-        success: false,
-        message: `Erreur lors de la mise à jour de l'entreprise: ${error.message}`,
-        data: null,
-      };
+      return errorResponse(`Erreur lors de la mise à jour: ${error.message}`, null, 500);
     }
   }
 
-  async remove(id: number): Promise<ApiResponse<null>> {
+  async remove(id: number) {
     try {
-      const entreprise = await this.prisma.entreprise.findUnique({
-        where: { idEntreprise: id },
-      });
-      if (!entreprise) {
-        return {
-          success: false,
-          message: 'Entreprise non trouvée',
-          data: null,
-        };
-      }
       await this.prisma.entreprise.delete({
         where: { idEntreprise: id },
       });
-      return {
-        success: true,
-        message: 'Entreprise supprimée avec succès',
-        data: null,
-      };
+      return successResponse('Entreprise supprimée avec succès', null);
     } catch (error: any) {
-      return {
-        success: false,
-        message: `Erreur lors de la suppression de l'entreprise: ${error.message}`,
-        data: null,
-      };
+      return errorResponse(`Erreur lors de la suppression: ${error.message}`, null, 500);
     }
   }
 }

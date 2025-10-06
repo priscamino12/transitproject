@@ -1,38 +1,34 @@
-import { Controller, Get, Post, Body, Param, Put, Delete, ParseIntPipe } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
 import { AbonnementService } from './abonnement.service';
-import { ApiResponse } from '../types/api-response';
-import { Abonnement } from '@prisma/client';
-import { CreateAbonnementDto, UpdateAbonnementDto } from './abonnement.dto';
+import { CreateAbonnementDto } from './dto/create-abonnement.dto';
+import { UpdateAbonnementDto } from './dto/updtate.abonnement.dto';
 
 @Controller('abonnement')
 export class AbonnementController {
   constructor(private readonly abonnementService: AbonnementService) {}
 
-//   @Post()
-//   create(@Body() createAbonnementDto: CreateAbonnementDto): Promise<ApiResponse<Abonnement>> {
-//     return this.abonnementService.create(createAbonnementDto);
-//   }
+  @Post()
+  create(@Body() dto: CreateAbonnementDto) {
+    return this.abonnementService.create(dto);
+  }
 
   @Get()
-  findAll(): Promise<ApiResponse<Abonnement[]>> {
+  findAll() {
     return this.abonnementService.findAll();
   }
 
   @Get(':id')
-  findOne(@Param('id', ParseIntPipe) id: number): Promise<ApiResponse<Abonnement>> {
-    return this.abonnementService.findOne(id);
+  findOne(@Param('id') id: string) {
+    return this.abonnementService.findOne(+id);
   }
 
-  @Put(':id')
-  update(
-    @Param('id', ParseIntPipe) id: number,
-    @Body() updateAbonnementDto: UpdateAbonnementDto,
-  ): Promise<ApiResponse<Abonnement>> {
-    return this.abonnementService.update(id, updateAbonnementDto);
+  @Patch(':id')
+  update(@Param('id') id: string, @Body() dto: UpdateAbonnementDto) {
+    return this.abonnementService.update(+id, dto);
   }
 
   @Delete(':id')
-  remove(@Param('id', ParseIntPipe) id: number): Promise<ApiResponse<null>> {
-    return this.abonnementService.remove(id);
+  remove(@Param('id') id: string) {
+    return this.abonnementService.remove(+id);
   }
 }

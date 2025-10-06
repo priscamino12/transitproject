@@ -8,19 +8,26 @@ import { ClientModule } from './client/client.module';
 import { AuthModule } from './auth/auth.module';
 import { EntrepriseModule } from './entreprise/entreprise.module';
 import { AdminSystemeModule } from './admin-systeme/admin-systeme.module';
+import { TypeAccesModule } from './type-acces/type-acces.module';
+import { ModePaiementModule } from './mode-paiement/mode-paiement.module';
+import { PaiementModule } from './paiement/paiement.module';
+import { AbonnementModule } from './abonnement/abonnement.module';
 
 
 
 @Module({
   imports: [
-    ConfigModule.forRoot({isGlobal: true,}),
-    PrismaModule,
-    EmployeModule,
-    ClientModule,
+    AbonnementModule,
     AuthModule,
+    AdminSystemeModule,
+    ConfigModule.forRoot({isGlobal: true,}),
+    ClientModule,
+    EmployeModule,
     EntrepriseModule,
-    AdminSystemeModule
-
+    PrismaModule,
+    TypeAccesModule,
+    ModePaiementModule,
+    PaiementModule,
   ],
   controllers: [AppController],
   providers: [AppService],

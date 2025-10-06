@@ -1,38 +1,34 @@
-import { Controller, Get, Post, Body, Param, Put, Delete, ParseIntPipe } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
 import { EntrepriseService } from './entreprise.service';
-import { CreateEntrepriseDto, UpdateEntrepriseDto } from './entreprise.dto';
-import { ApiResponse } from '../types/api-response';
-import { Entreprise } from '@prisma/client';
+import { CreateEntrepriseDto } from './dto/create-entreprise.dto';
+import { UpdateEntrepriseDto } from './dto/update-entreprise.dto';
 
 @Controller('entreprise')
 export class EntrepriseController {
   constructor(private readonly entrepriseService: EntrepriseService) {}
 
   @Post()
-  create(@Body() createEntrepriseDto: CreateEntrepriseDto): Promise<ApiResponse<Entreprise>> {
-    return this.entrepriseService.create(createEntrepriseDto);
+  create(@Body() dto: CreateEntrepriseDto) {
+    return this.entrepriseService.create(dto);
   }
 
   @Get()
-  findAll(): Promise<ApiResponse<Entreprise[]>> {
+  findAll() {
     return this.entrepriseService.findAll();
   }
-
+ 
   @Get(':id')
-  findOne(@Param('id', ParseIntPipe) id: number): Promise<ApiResponse<Entreprise>> {
-    return this.entrepriseService.findOne(id);
+  findOne(@Param('id') id: string) {
+    return this.entrepriseService.findOne(+id);
   }
 
-  @Put(':id')
-  update(
-    @Param('id', ParseIntPipe) id: number,
-    @Body() updateEntrepriseDto: UpdateEntrepriseDto,
-  ): Promise<ApiResponse<Entreprise>> {
-    return this.entrepriseService.update(id, updateEntrepriseDto);
+  @Patch(':id')
+  update(@Param('id') id: string, @Body() dto: UpdateEntrepriseDto) {
+    return this.entrepriseService.update(+id, dto);
   }
 
   @Delete(':id')
-  remove(@Param('id', ParseIntPipe) id: number): Promise<ApiResponse<null>> {
-    return this.entrepriseService.remove(id);
+  remove(@Param('id') id: string) {
+    return this.entrepriseService.remove(+id);
   }
 }

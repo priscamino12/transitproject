@@ -25,12 +25,6 @@ enum StatusAbonnement {
   SUSPENDU
 }
 
-enum DureeAbonnement {
-  MENSUEL
-  TRIMESTRIEL
-  ANNUEL
-}
-
 model TypeAcces {
   id          Int          @id @default(autoincrement())
   nom         String       @unique // SIMPLE, PREMIUM, ENTERPRISE
@@ -47,7 +41,8 @@ model Abonnement {
   idAbonnement                  Int             @id @default(autoincrement())
   typeAccesId          Int
   typeAcces            TypeAcces       @relation(fields: [typeAccesId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  duree                DureeAbonnement
+  dateDebut           DateTime
+  dateFin             DateTime
   reductionPourcentage Float // ex : 0.05 = 5%
   createdAt            DateTime        @default(now())
   updatedAt            DateTime        @updatedAt
@@ -138,8 +133,6 @@ model Employe {
   transAerienneModified TransAerienne[] @relation("Modifier")
   clientCreated         Client[]        @relation("Creator")
   clientModified        Client[]        @relation("Modifier")
-  codeTemp              String? // Champ optionnel pour le code temporaire
-  codeTempExpires       DateTime? // Date d'expiration du code temporaire
 
   @@map("employe")
 }
