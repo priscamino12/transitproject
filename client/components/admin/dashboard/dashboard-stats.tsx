@@ -3,7 +3,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useEffect, useState } from "react";
 import { FaUsers, FaShippingFast, FaFileInvoice, FaChartLine, FaArrowUp, FaArrowDown } from "react-icons/fa";
-import { getTotalExpeditions, getExpeditionsOnYear } from "@/services/ashboardService";
+import { getTotalExpeditions, getExpeditionsOnYear } from "./dashboardService";
 
 export function DashboardStats() {
   const [expedition, setExpedition] = useState(0);

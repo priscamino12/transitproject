@@ -6,6 +6,8 @@ import { FaEnvelope, FaLock, FaEye, FaRegEyeSlash } from "react-icons/fa";
 import { toast } from "react-toastify";
 import { AuthService } from "../services/auth.service";
 import { LoginDto } from "../types/auth";
+import { useAuth } from "@/contexts/AuthContext";
+import { UserInfo } from "../types/auth";
 
 interface FormLoginProps {
   onForgot?: () => void;
@@ -16,29 +18,52 @@ export default function FormLogin({ onForgot }: FormLoginProps) {
   const [showPassword, setShowPassword] = useState(false);
   const [login, setLogin] = useState<LoginDto>({ email: "", motDePasse: "" });
 
+  const { setUser } = useAuth();
   const togglePasswordVisibility = () => setShowPassword(prev => !prev);
 
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    try {
-      const res = await AuthService.login(login);
-      console.log("✅ Réponse API :", res);
+  e.preventDefault();
+  try {
+    const res = await AuthService.login(login);
+    console.log("✅ Réponse API :", res);
 
-      if (res.success) {
-        // Stocker seulement les infos utilisateur côté frontend
-        localStorage.setItem("userName", res.data.userInfo.nom);
-        localStorage.setItem("userType", res.data.userInfo.type);
+   if (res.success) {
+  const { nom, email, role } = res.data.userInfo;
 
-        toast.success("Connexion réussie !");
-        router.push("/management/dashboard");
-      } else {
-        toast.error(res.message || "Échec de la connexion");
-      }
-    } catch (err: any) {
-      console.error("❌ Erreur login :", err);
-      toast.error(err.message || "Erreur lors de la connexion");
+  // Déterminer le type pour le menu
+  let type: UserInfo["type"] = "client";
+  if (role.toLowerCase() === "superadmin") type = "superadmin";
+  else if (role.toLowerCase() === "admin") type = "admin";
+  else if (role.toLowerCase() === "client") type = "client";
+
+  const userObj = { id: res.data.userInfo.id, nom, email, type, role };
+  setUser(userObj);
+  localStorage.setItem("user", JSON.stringify(userObj));
+
+  // Redirection
+  switch (type) {
+    case "superadmin":
+      router.push("/management/dashboardSuperAdmin");
+      break;
+    case "admin":
+      router.push("/management/dashboardAdmin");
+      break;
+    case "client":
+      router.push("/management/client");
+      break;
+    default:
+      router.push("/");
+  }
+
+    } else {
+      toast.error(res.message || "Échec de la connexion");
     }
-  };
+  } catch (err: any) {
+    console.error("❌ Erreur login :", err);
+    toast.error(err.message || "Erreur lors de la connexion");
+  }
+};
+
 
   return (
     <form className="flex flex-col gap-4 w-full max-w-md" onSubmit={handleLogin}>

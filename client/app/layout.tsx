@@ -11,7 +11,7 @@ import { AuthProvider } from "@/contexts/AuthContext"
 export const metadata: Metadata = {
   title: "Primex Logistics - Transit International",
   description: "Système de gestion pour entreprise de transit international",
-  generator: "v0.app",
+  generator: "celitech",
 }
 
 import { LanguageProvider } from "@/contexts/LanguageContext"
