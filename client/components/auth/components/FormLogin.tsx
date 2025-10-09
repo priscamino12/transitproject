@@ -20,48 +20,47 @@ export default function FormLogin({ onForgot }: FormLoginProps) {
   const { setUser } = useAuth();
   const togglePasswordVisibility = () => setShowPassword(prev => !prev);
 
- const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
-  e.preventDefault();
-  try {
-    const res = await AuthService.login(login);
-    console.log("✅ Réponse API :", res);
+  const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    try {
+      const res = await AuthService.login(login);
+      console.log("✅ Réponse API :", res);
 
-    if (res.success) {
-      // ⚠️ On prend directement les infos dans res.data
-      const { id, nom, email, role, type } = res.data;
+      if (res.success) {
+        const { token, userInfo } = res.data; // ← userInfo contient id, nom, email, role, type
+        const { id, nom, email, role, type } = userInfo;
 
-      // Déterminer le type pour le menu
-      let userType: UserInfo["type"] = "client";
-      if (role.toLowerCase() === "superadmin") userType = "superadmin";
-      else if (role.toLowerCase() === "admin") userType = "admin";
-      else if (role.toLowerCase() === "client") userType = "client";
+        let userType: UserInfo["type"] = "client";
+        if (role.toLowerCase() === "superadmin") userType = "superadmin";
+        else if (role.toLowerCase() === "admin") userType = "admin";
+        else if (role.toLowerCase() === "client") userType = "client";
 
-      const userObj = { id, nom, email, type: userType, role };
-      setUser(userObj);
-      localStorage.setItem("user", JSON.stringify(userObj));
+        const userObj = { id, nom, email, type: userType, role };
+        setUser(userObj);
+        localStorage.setItem("user", JSON.stringify(userObj));
 
-      // Redirection selon le type
-      switch (userType) {
-        case "superadmin":
-          router.push("/management/dashboardSuperAdmin");
-          break;
-        case "admin":
-          router.push("/management/dashboardAdmin");
-          break;
-        case "client":
-          router.push("/management/client");
-          break;
-        default:
-          router.push("/");
+        switch (userType) {
+          case "superadmin":
+            router.push("/management/dashboardSuperAdmin");
+            break;
+          case "admin":
+            router.push("/management/dashboardAdmin");
+            break;
+          case "client":
+            router.push("/management/client");
+            break;
+          default:
+            router.push("/");
+        }
       }
-    } else {
-      toast.error(res.message || "Échec de la connexion");
+      else {
+        toast.error(res.message || "Échec de la connexion");
+      }
+    } catch (err: any) {
+      console.error("❌ Erreur login :", err);
+      toast.error(err.message || "Erreur lors de la connexion");
     }
-  } catch (err: any) {
-    console.error("❌ Erreur login :", err);
-    toast.error(err.message || "Erreur lors de la connexion");
-  }
-};
+  };
 
   return (
     <form className="flex flex-col gap-4 w-full max-w-md" onSubmit={handleLogin}>

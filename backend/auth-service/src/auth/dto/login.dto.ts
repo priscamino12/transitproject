@@ -7,3 +7,9 @@ export class LoginDto {
   @IsNotEmpty()
   password: string;
 }
+export class CreateUserDto {
+  nom: string;
+  email: string;
+  password: string;
+  role: 'SuperAdmin' | 'admin' | 'client';
+}

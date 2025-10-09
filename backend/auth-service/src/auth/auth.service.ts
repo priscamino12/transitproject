@@ -2,7 +2,7 @@ import { Injectable, Response } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
-import { LoginDto } from './dto/login.dto';
+import { CreateUserDto, LoginDto } from './dto/login.dto';
 import { successResponse, errorResponse } from '../common/response.utils';
 import { ConfigService } from '@nestjs/config';
 
@@ -67,10 +67,13 @@ export class AuthService {
       res.cookie('access_token', token, {
         httpOnly: true,
         secure: this.configService.get<string>('NODE_ENV') === 'production',
-        maxAge:  60 * 60 * 1000 *24 * 90, // 90 jours
+        maxAge: 60 * 60 * 1000 * 24 * 90, // 90 jours
       });
 
-      return successResponse('Connexion réussie', { id, nom, email, role, type });
+      return successResponse('Connexion réussie', {
+        token,
+        userInfo: { id, nom, email, role, type },
+      });
     } catch (error: any) {
       return errorResponse(`Erreur lors de la connexion: ${error.message}`, null, 500);
     }
@@ -89,4 +92,50 @@ export class AuthService {
       return errorResponse('Erreur serveur lors de la déconnexion.')
     }
   }
+
+ // auth.service.ts
+async createUser(dto: CreateUserDto) {
+  const hashedPassword = await bcrypt.hash(dto.password, 10);
+
+  let user;
+
+  if (dto.role === 'SuperAdmin') {
+    // Création d’un SuperAdmin dans la table AdminSysteme
+    user = await this.prisma.adminSysteme.create({
+      data: {
+        nomAdminSysteme: dto.nom,
+        emailAdminSysteme: dto.email,
+        motDePasse: hashedPassword,
+        role: 'SuperAdmin',
+      },
+    });
+  } else if (dto.role === 'admin') {
+    // Création d’un Employé (Admin)
+    user = await this.prisma.employe.create({
+      data: {
+        nomEmploye: dto.nom,
+        emailEmploye: dto.email,
+        motDePasse: hashedPassword,
+        role: 'admin',
+      },
+    });
+  } else if (dto.role === 'client') {
+    // Création d’un Client
+    user = await this.prisma.client.create({
+      data: {
+        nomClient: dto.nom,
+        emailClient: dto.email,
+        motDePasse: hashedPassword,
+        role: 'client',
+      },
+    });
+  } else {
+    throw new Error(`Rôle invalide : ${dto.role}`);
+  }
+
+  return { message: 'Utilisateur créé avec succès', user }
 }
+
+
+}
+
