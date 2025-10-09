@@ -167,7 +167,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                 <span className="text-sidebar-primary-foreground font-bold text-sm">PL</span>
               </div>
               <div>
-                <h1 className="text-sidebar-foreground font-bold text-lg">Primex</h1>
+                <h1 className="text-sidebar-foreground font-bold text-lg">Transit</h1>
                 <p className="text-sidebar-foreground/70 text-sm">Logistics</p>
               </div>
             </div>

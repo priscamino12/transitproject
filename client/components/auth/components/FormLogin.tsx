@@ -5,9 +5,8 @@ import { useRouter } from "next/navigation";
 import { FaEnvelope, FaLock, FaEye, FaRegEyeSlash } from "react-icons/fa";
 import { toast } from "react-toastify";
 import { AuthService } from "../services/auth.service";
-import { LoginDto } from "../types/auth";
+import { LoginDto, UserInfo } from "../types/auth";
 import { useAuth } from "@/contexts/AuthContext";
-import { UserInfo } from "../types/auth";
 
 interface FormLoginProps {
   onForgot?: () => void;
@@ -16,45 +15,45 @@ interface FormLoginProps {
 export default function FormLogin({ onForgot }: FormLoginProps) {
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
-  const [login, setLogin] = useState<LoginDto>({ email: "", motDePasse: "" });
+  const [login, setLogin] = useState<LoginDto>({ email: "", password: "" });
 
   const { setUser } = useAuth();
   const togglePasswordVisibility = () => setShowPassword(prev => !prev);
 
-  const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
+ const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
   e.preventDefault();
   try {
     const res = await AuthService.login(login);
     console.log("✅ Réponse API :", res);
 
-   if (res.success) {
-  const { nom, email, role } = res.data.userInfo;
+    if (res.success) {
+      // ⚠️ On prend directement les infos dans res.data
+      const { id, nom, email, role, type } = res.data;
 
-  // Déterminer le type pour le menu
-  let type: UserInfo["type"] = "client";
-  if (role.toLowerCase() === "superadmin") type = "superadmin";
-  else if (role.toLowerCase() === "admin") type = "admin";
-  else if (role.toLowerCase() === "client") type = "client";
+      // Déterminer le type pour le menu
+      let userType: UserInfo["type"] = "client";
+      if (role.toLowerCase() === "superadmin") userType = "superadmin";
+      else if (role.toLowerCase() === "admin") userType = "admin";
+      else if (role.toLowerCase() === "client") userType = "client";
 
-  const userObj = { id: res.data.userInfo.id, nom, email, type, role };
-  setUser(userObj);
-  localStorage.setItem("user", JSON.stringify(userObj));
+      const userObj = { id, nom, email, type: userType, role };
+      setUser(userObj);
+      localStorage.setItem("user", JSON.stringify(userObj));
 
-  // Redirection
-  switch (type) {
-    case "superadmin":
-      router.push("/management/dashboardSuperAdmin");
-      break;
-    case "admin":
-      router.push("/management/dashboardAdmin");
-      break;
-    case "client":
-      router.push("/management/client");
-      break;
-    default:
-      router.push("/");
-  }
-
+      // Redirection selon le type
+      switch (userType) {
+        case "superadmin":
+          router.push("/management/dashboardSuperAdmin");
+          break;
+        case "admin":
+          router.push("/management/dashboardAdmin");
+          break;
+        case "client":
+          router.push("/management/client");
+          break;
+        default:
+          router.push("/");
+      }
     } else {
       toast.error(res.message || "Échec de la connexion");
     }
@@ -63,7 +62,6 @@ export default function FormLogin({ onForgot }: FormLoginProps) {
     toast.error(err.message || "Erreur lors de la connexion");
   }
 };
-
 
   return (
     <form className="flex flex-col gap-4 w-full max-w-md" onSubmit={handleLogin}>
@@ -85,7 +83,7 @@ export default function FormLogin({ onForgot }: FormLoginProps) {
           type={showPassword ? "text" : "password"}
           placeholder="Mot de passe"
           className="bg-transparent outline-none flex-1"
-          onChange={e => setLogin({ ...login, motDePasse: e.target.value })}
+          onChange={e => setLogin({ ...login, password: e.target.value })}
         />
         <button
           type="button"

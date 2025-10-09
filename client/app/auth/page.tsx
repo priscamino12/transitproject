@@ -27,13 +27,13 @@ export default function AuthPage() {
           <div className={`hidden md:flex w-1/2 p-12 text-white bg-blue-600 ${isRegister ? "order-2" : "order-1"}`}>
             <div className="flex flex-col justify-between h-full">
               <div>
-                <h2 className="text-5xl font-bold mb-4">Primex Logistics</h2>
+                <h2 className="text-5xl font-bold mb-4">Logistics</h2>
                 <p className="text-lg opacity-90 mb-6">
                   {isRegister ? "Créez un compte" : "Connectez-vous"} pour gérer vos expéditions.
                 </p>
                 <Image
                   src="/transit.jpg"
-                  alt="Primex Logistics"
+                  alt="Logistics"
                   width={500}
                   height={300}
                   className="rounded-xl shadow-lg"

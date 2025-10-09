@@ -1,6 +1,6 @@
 export interface LoginDto {
   email: string;
-  motDePasse: string;
+  password: string;
 }
 
 export interface UserInfo {
@@ -21,10 +21,7 @@ export interface User {
 export interface LoginResponse {
   success: boolean;
   message: string;
-  data: {
-    token: string | { accessToken: string; refreshToken?: string };
-    userInfo: User; // <-- ici
-  };
+  data: User;
 }
 
 
