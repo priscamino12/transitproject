@@ -1,11 +1,10 @@
 import { Module } from '@nestjs/common';
 import { PaiementService } from './paiement.service';
 import { PaiementController } from './paiement.controller';
-import { PrismaModule } from 'src/prisma/prisma.module';
+import { PrismaService } from 'src/prisma/prisma.service';
 
 @Module({
-  imports: [PrismaModule],
-  providers: [PaiementService],
+  providers: [PaiementService,PrismaService],
   controllers: [PaiementController]
 })
 export class PaiementModule {}

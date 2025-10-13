@@ -6,6 +6,8 @@ import { EntrepriseModule } from './entreprise/entreprise.module';
 import { PaiementModule } from './paiement/paiement.module';
 import { TypeAccesModule } from './type-acces/type-acces.module';
 import { AbonnementModule } from './abonnement/abonnement.module';
+import { ModePaiementModule } from './mode-paiement/mode-paiement.module';
+import { EmployeModule } from './employe/employe.module';
 
 @Module({
   imports: [
@@ -13,6 +15,8 @@ import { AbonnementModule } from './abonnement/abonnement.module';
     PrismaModule,
     AuthModule,
     EntrepriseModule,
+    EmployeModule,
+    ModePaiementModule,
     PaiementModule,
     TypeAccesModule,
     AbonnementModule,
