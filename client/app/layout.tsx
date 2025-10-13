@@ -7,6 +7,7 @@ import { ThemeProvider } from "@/components/admin/theme-provider"
 import { Suspense } from "react"
 import "./globals.css"
 import { AuthProvider } from "@/contexts/AuthContext"
+import { ToastContainer } from "react-toastify"
 
 export const metadata: Metadata = {
   title: "Transit International",
@@ -29,6 +30,15 @@ export default function RootLayout({
             <LanguageProvider>
               <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
                 {children}
+                <ToastContainer
+                  position="top-right"
+                  autoClose={3000} // Durée du toast
+                  hideProgressBar={false}
+                  newestOnTop={false}
+                  closeOnClick
+                  pauseOnHover
+                  draggable
+                />
               </ThemeProvider>
             </LanguageProvider>
           </Suspense>

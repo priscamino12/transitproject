@@ -1,8 +1,9 @@
-import { Injectable, Response } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
-import { CreateUserDto, LoginDto } from './dto/login.dto';
+import { CreateUserDto } from './dto/login.dto';
+import {  LoginDto } from './dto/login.dto';
 import { successResponse, errorResponse } from '../common/response.utils';
 import { ConfigService } from '@nestjs/config';
 
@@ -94,7 +95,8 @@ export class AuthService {
   }
 
  // auth.service.ts
-async createUser(dto: CreateUserDto) {
+
+  /* async createUser(dto: CreateUserDto) {
   const hashedPassword = await bcrypt.hash(dto.password, 10);
 
   let user;
@@ -134,7 +136,7 @@ async createUser(dto: CreateUserDto) {
   }
 
   return { message: 'Utilisateur créé avec succès', user }
-}
+}  */
 
 
 }

@@ -26,33 +26,40 @@ export default function FormLogin({ onForgot }: FormLoginProps) {
       const res = await AuthService.login(login);
       console.log("✅ Réponse API :", res);
 
-      if (res.success) {
-        const { token, userInfo } = res.data; // ← userInfo contient id, nom, email, role, type
-        const { id, nom, email, role, type } = userInfo;
+     if (res.success) {
+  const { token, userInfo } = res.data;
+  const { id, nom, email, role, type } = userInfo;
 
-        let userType: UserInfo["type"] = "client";
-        if (role.toLowerCase() === "superadmin") userType = "superadmin";
-        else if (role.toLowerCase() === "admin") userType = "admin";
-        else if (role.toLowerCase() === "client") userType = "client";
+  let userType: UserInfo["type"] = "client";
+  if (role.toLowerCase() === "superadmin") userType = "superadmin";
+  else if (role.toLowerCase() === "admin") userType = "admin";
+  else if (role.toLowerCase() === "client") userType = "client";
 
-        const userObj = { id, nom, email, type: userType, role };
-        setUser(userObj);
-        localStorage.setItem("user", JSON.stringify(userObj));
+  const userObj = { id, nom, email, type: userType, role };
+  setUser(userObj);
+  localStorage.setItem("user", JSON.stringify(userObj));
 
-        switch (userType) {
-          case "superadmin":
-            router.push("/management/dashboardSuperAdmin");
-            break;
-          case "admin":
-            router.push("/management/dashboardAdmin");
-            break;
-          case "client":
-            router.push("/management/client");
-            break;
-          default:
-            router.push("/");
-        }
-      }
+  // Affiche le toast
+  toast.success("Connexion réussie !");
+
+  // Attendre un petit délai avant la redirection pour laisser le toast visible
+  setTimeout(() => {
+    switch (userType) {
+      case "superadmin":
+        router.push("/management/dashboardSuperAdmin");
+        break;
+      case "admin":
+        router.push("/management/dashboardAdmin");
+        break;
+      case "client":
+        router.push("/management/client");
+        break;
+      default:
+        router.push("/");
+    }
+  }, 500); // 500ms, tu peux ajuster si nécessaire
+}
+
       else {
         toast.error(res.message || "Échec de la connexion");
       }
