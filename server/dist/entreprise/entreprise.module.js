@@ -10,15 +10,15 @@ exports.EntrepriseModule = void 0;
 const common_1 = require("@nestjs/common");
 const entreprise_service_1 = require("./entreprise.service");
 const entreprise_controller_1 = require("./entreprise.controller");
-const prisma_module_1 = require("../prisma/prisma.module");
+const prisma_service_1 = require("../prisma/prisma.service");
 let EntrepriseModule = class EntrepriseModule {
 };
 exports.EntrepriseModule = EntrepriseModule;
 exports.EntrepriseModule = EntrepriseModule = __decorate([
     (0, common_1.Module)({
-        imports: [prisma_module_1.PrismaModule],
-        providers: [entreprise_service_1.EntrepriseService],
-        controllers: [entreprise_controller_1.EntrepriseController]
+        controllers: [entreprise_controller_1.EntrepriseController],
+        providers: [entreprise_service_1.EntrepriseService, prisma_service_1.PrismaService],
+        exports: [entreprise_service_1.EntrepriseService],
     })
 ], EntrepriseModule);
 //# sourceMappingURL=entreprise.module.js.map

@@ -10,12 +10,13 @@ exports.TypeAccesModule = void 0;
 const common_1 = require("@nestjs/common");
 const type_acces_service_1 = require("./type-acces.service");
 const type_acces_controller_1 = require("./type-acces.controller");
+const prisma_service_1 = require("../prisma/prisma.service");
 let TypeAccesModule = class TypeAccesModule {
 };
 exports.TypeAccesModule = TypeAccesModule;
 exports.TypeAccesModule = TypeAccesModule = __decorate([
     (0, common_1.Module)({
-        providers: [type_acces_service_1.TypeAccesService],
+        providers: [type_acces_service_1.TypeAccesService, prisma_service_1.PrismaService],
         controllers: [type_acces_controller_1.TypeAccesController]
     })
 ], TypeAccesModule);

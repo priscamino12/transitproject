@@ -10,15 +10,15 @@ exports.AbonnementModule = void 0;
 const common_1 = require("@nestjs/common");
 const abonnement_service_1 = require("./abonnement.service");
 const abonnement_controller_1 = require("./abonnement.controller");
-const prisma_module_1 = require("../prisma/prisma.module");
+const prisma_service_1 = require("../prisma/prisma.service");
 let AbonnementModule = class AbonnementModule {
 };
 exports.AbonnementModule = AbonnementModule;
 exports.AbonnementModule = AbonnementModule = __decorate([
     (0, common_1.Module)({
-        imports: [prisma_module_1.PrismaModule],
-        providers: [abonnement_service_1.AbonnementService],
-        controllers: [abonnement_controller_1.AbonnementController]
+        controllers: [abonnement_controller_1.AbonnementController],
+        providers: [abonnement_service_1.AbonnementService, prisma_service_1.PrismaService],
+        exports: [abonnement_service_1.AbonnementService],
     })
 ], AbonnementModule);
 //# sourceMappingURL=abonnement.module.js.map

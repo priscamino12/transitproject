@@ -15,6 +15,8 @@ const entreprise_module_1 = require("./entreprise/entreprise.module");
 const paiement_module_1 = require("./paiement/paiement.module");
 const type_acces_module_1 = require("./type-acces/type-acces.module");
 const abonnement_module_1 = require("./abonnement/abonnement.module");
+const mode_paiement_module_1 = require("./mode-paiement/mode-paiement.module");
+const employe_module_1 = require("./employe/employe.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -25,6 +27,8 @@ exports.AppModule = AppModule = __decorate([
             prisma_module_1.PrismaModule,
             auth_module_1.AuthModule,
             entreprise_module_1.EntrepriseModule,
+            employe_module_1.EmployeModule,
+            mode_paiement_module_1.ModePaiementModule,
             paiement_module_1.PaiementModule,
             type_acces_module_1.TypeAccesModule,
             abonnement_module_1.AbonnementModule,
