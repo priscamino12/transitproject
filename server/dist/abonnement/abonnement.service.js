@@ -18,15 +18,25 @@ let AbonnementService = class AbonnementService {
     constructor(prisma) {
         this.prisma = prisma;
     }
-    async create(data) {
+    async create(dto) {
+        const { typeAccesId, dureeAbonnementId } = dto;
+        const duree = await this.prisma.dureeAbonnement.findUnique({
+            where: { id: dureeAbonnementId },
+        });
+        if (!duree) {
+            return (0, response_utils_1.errorResponse)('Durée d’abonnement introuvable', null, 404);
+        }
+        const dateDebut = new Date();
+        const dateFin = new Date();
+        dateFin.setMonth(dateFin.getMonth() + duree.nbMois);
         try {
             const abonnement = await this.prisma.abonnement.create({
                 data: {
-                    typeAccesId: data.typeAccesId,
-                    dateDebut: new Date(data.dateDebut),
-                    dateFin: new Date(data.dateFin),
-                    reductionPourcentage: data.reductionPourcentage ?? 0,
-                },
+                    typeAccesId,
+                    dureeAbonnementId,
+                    dateDebut,
+                    dateFin,
+                }, include: { typeAcces: true, paiements: true },
             });
             return (0, response_utils_1.successResponse)('Abonnement créé avec succès', abonnement);
         }

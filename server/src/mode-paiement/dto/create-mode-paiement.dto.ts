@@ -8,4 +8,4 @@ export class CreateModePaiementDto {
   @IsOptional()
   @IsNumber()
   frais?: number;
-}
+} 

@@ -36,21 +36,6 @@ model TypeAcces {
 
   @@map("type_acces")
 }
-
-model Abonnement {
-  idAbonnement                  Int             @id @default(autoincrement())
-  typeAccesId          Int
-  typeAcces            TypeAcces       @relation(fields: [typeAccesId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  dateDebut           DateTime
-  dateFin             DateTime
-  reductionPourcentage Float // ex : 0.05 = 5%
-  createdAt            DateTime        @default(now())
-  updatedAt            DateTime        @updatedAt
-  paiements            Paiement[]
-
-  @@map("abonnement")
-}
-
 model ModePaiement {
   id        Int        @id @default(autoincrement())
   nom       String     @unique
@@ -62,7 +47,29 @@ model ModePaiement {
 
   @@map("mode_paiement")
 }
+model DureeAbonnement {
+  id              Int      @id @default(autoincrement())
+  nom             String   // "Mensuel", "Trimestriel", "Annuel"
+  nbMois          Int      // 1, 3, 12
+  reduction       Float    // ex: 0.05 = 5%
+  abonnements     Abonnement[]
 
+  @@map("duree_abonnement")
+}
+model Abonnement {
+  idAbonnement                  Int             @id @default(autoincrement())
+  typeAccesId          Int
+  typeAcces            TypeAcces       @relation(fields: [typeAccesId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  dureeAbonnementId    Int
+  dureeAbonnement      DureeAbonnement @relation(fields: [dureeAbonnementId], references: [id])
+  dateDebut           DateTime
+  dateFin             DateTime
+  createdAt            DateTime        @default(now())
+  updatedAt            DateTime        @updatedAt
+  paiements            Paiement[]
+
+  @@map("abonnement")
+}
 model Paiement {
   id             Int          @id @default(autoincrement())
   abonnementId   Int

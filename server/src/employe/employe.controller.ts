@@ -2,10 +2,6 @@ import { Controller, Get, Post, Body, Param, Put, Delete, ParseIntPipe } from '@
 import { EmployeService } from './employe.service';
 import { CreateEmployeDto } from './dto/create-employe.dto';
 import { UpdateEmployeDto } from './dto/update-employe.dto';
-import { Employe } from '@prisma/client';
-
-// Type personnalisé pour exclure motDePasse
-// type EmployeResponse = Omit<Employe, 'motDePasse'>;
 
 @Controller('employe')
 export class EmployeController {

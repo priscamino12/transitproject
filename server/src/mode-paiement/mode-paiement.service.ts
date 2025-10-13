@@ -13,7 +13,7 @@ export class ModePaiementService {
       const mode = await this.prisma.modePaiement.create({ data: dto });
       return successResponse('ModePaiement créé', mode, 201);
     } catch (error: any) {
-      return errorResponse(error.message, null, 500);
+      return errorResponse(error.message, null, 500); 
     }
   }
 

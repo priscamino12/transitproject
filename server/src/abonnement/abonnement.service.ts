@@ -7,23 +7,40 @@ import { UpdateAbonnementDto } from './dto/updtate.abonnement.dto';
 
 @Injectable()
 export class AbonnementService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService) { }
 
-  async create(data: CreateAbonnementDto) {
-  try {
-    const abonnement = await this.prisma.abonnement.create({
-      data: {
-        typeAccesId: data.typeAccesId,
-        dateDebut: new Date(data.dateDebut),
-        dateFin: new Date(data.dateFin),
-        reductionPourcentage: data.reductionPourcentage ?? 0,
-      },
+  async create(dto: CreateAbonnementDto) {
+    const { typeAccesId, dureeAbonnementId } = dto;
+
+    // 🔹 Récupération de la durée en mois depuis la table duree_abonnement
+    const duree = await this.prisma.dureeAbonnement.findUnique({
+      where: { id: dureeAbonnementId },
     });
-    return successResponse('Abonnement créé avec succès', abonnement);
-  } catch (error: any) {
-    return errorResponse('Erreur lors de la création de l’abonnement', error.message);
+
+    if (!duree) {
+      return errorResponse('Durée d’abonnement introuvable', null, 404);
+    }
+    const dateDebut = new Date();
+    const dateFin = new Date();
+    dateFin.setMonth(dateFin.getMonth() + duree.nbMois);
+
+    // 🔹 Création de l’abonnement
+
+
+    try {
+      const abonnement = await this.prisma.abonnement.create({
+        data: {
+          typeAccesId,
+          dureeAbonnementId,
+          dateDebut,
+          dateFin,
+        }, include: { typeAcces: true, paiements: true },
+      });
+      return successResponse('Abonnement créé avec succès', abonnement);
+    } catch (error: any) {
+      return errorResponse('Erreur lors de la création de l’abonnement', error.message);
+    }
   }
-}
 
   async findAll() {
     try {

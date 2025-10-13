@@ -4,7 +4,7 @@ import { UpdateAbonnementDto } from './dto/updtate.abonnement.dto';
 export declare class AbonnementService {
     private prisma;
     constructor(prisma: PrismaService);
-    create(data: CreateAbonnementDto): Promise<{
+    create(dto: CreateAbonnementDto): Promise<{
         status: number;
         success: boolean;
         message: string;

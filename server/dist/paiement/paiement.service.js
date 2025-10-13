@@ -19,8 +19,33 @@ let PaiementService = class PaiementService {
         this.prisma = prisma;
     }
     async create(dto) {
+        const { abonnementId, entrepriseId, modePaiementId, montant } = dto;
+        const abonnement = await this.prisma.abonnement.findUnique({
+            where: { idAbonnement: abonnementId },
+            include: {
+                dureeAbonnement: true,
+                typeAcces: true,
+            },
+        });
+        if (!abonnement) {
+            return (0, response_utils_1.errorResponse)('Abonnement introuvable', null, 404);
+        }
+        const prixBase = abonnement.typeAcces.prixBase;
+        const reduction = abonnement.dureeAbonnement.reduction;
+        const prixFinal = prixBase - (prixBase * reduction);
+        if (montant !== prixFinal) {
+            return (0, response_utils_1.errorResponse)(`Montant incorrect. Le montant attendu est ${prixFinal}.`, null, 400);
+        }
         try {
-            const paiement = await this.prisma.paiement.create({ data: dto });
+            const paiement = await this.prisma.paiement.create({
+                data: {
+                    abonnementId,
+                    entrepriseId,
+                    modePaiementId,
+                    montant,
+                    datePaiement: new Date(),
+                }, include: { entreprise: true, abonnement: true, modePaiement: true },
+            });
             return (0, response_utils_1.successResponse)('Paiement enregistré', paiement, 201);
         }
         catch (error) {

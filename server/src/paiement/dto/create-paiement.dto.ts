@@ -16,4 +16,4 @@ export class CreatePaiementDto {
   @IsNotEmpty()
   @IsNumber()
   montant!: number;
-}
+} 

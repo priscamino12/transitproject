@@ -17,6 +17,8 @@ const type_acces_module_1 = require("./type-acces/type-acces.module");
 const abonnement_module_1 = require("./abonnement/abonnement.module");
 const mode_paiement_module_1 = require("./mode-paiement/mode-paiement.module");
 const employe_module_1 = require("./employe/employe.module");
+const admin_systeme_module_1 = require("./admin-systeme/admin-systeme.module");
+const duree_abonnement_module_1 = require("./duree-abonnement/duree-abonnement.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -26,12 +28,14 @@ exports.AppModule = AppModule = __decorate([
             config_1.ConfigModule.forRoot({ isGlobal: true }),
             prisma_module_1.PrismaModule,
             auth_module_1.AuthModule,
+            admin_systeme_module_1.AdminSystemeModule,
             entreprise_module_1.EntrepriseModule,
             employe_module_1.EmployeModule,
             mode_paiement_module_1.ModePaiementModule,
             paiement_module_1.PaiementModule,
             type_acces_module_1.TypeAccesModule,
             abonnement_module_1.AbonnementModule,
+            duree_abonnement_module_1.DureeAbonnementModule,
         ],
     })
 ], AppModule);

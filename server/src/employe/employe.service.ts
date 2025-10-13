@@ -1,12 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { Employe } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import { CreateEmployeDto } from './dto/create-employe.dto';
 import { UpdateEmployeDto } from './dto/update-employe.dto';
+import { errorResponse, successResponse } from 'src/utils/response.utils';
 
-// Type personnalisé pour exclure motDePasse
-type EmployeResponse = Omit<Employe, 'motDePasse'>;
 
 @Injectable()
 export class EmployeService {
@@ -19,12 +17,7 @@ export class EmployeService {
         where: { idEntreprise: createEmployeDto.idEntreprise },
       });
       if (!entreprise) {
-        
-        return {
-          success: false,
-          message: 'Entreprise non trouvée',
-          data: null,
-        };
+        return errorResponse('Entreprise non trouvée', null, 404 );
       }
 
       const hashedPassword = await bcrypt.hash(createEmployeDto.motDePasse, 10);
@@ -35,17 +28,10 @@ export class EmployeService {
         },
       });
       const { motDePasse, ...employeResponse } = employe; // Exclure motDePasse
-      return {
-        success: true,
-        message: 'Employé créé avec succès',
-        data: employeResponse,
-      };
+      return successResponse('Employé créé avec succès', employeResponse, 201);
+      
     } catch (error: any) {
-      return {
-        success: false,
-        message: `Erreur lors de la création de l'employé: ${error.message}`,
-        data: null,
-      };
+      return errorResponse(`Erreur lors de la création de l'employé: ${error.message}`, null, 500);
     }
   }
 
