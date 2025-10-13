@@ -98,7 +98,10 @@ let AuthService = class AuthService {
                 secure: this.configService.get('NODE_ENV') === 'production',
                 maxAge: 60 * 60 * 1000 * 24 * 90,
             });
-            return (0, response_utils_1.successResponse)('Connexion réussie', { id, nom, email, role, type });
+            return (0, response_utils_1.successResponse)('Connexion réussie', {
+                token,
+                userInfo: { id, nom, email, role, type },
+            });
         }
         catch (error) {
             return (0, response_utils_1.errorResponse)(`Erreur lors de la connexion: ${error.message}`, null, 500);
@@ -116,6 +119,44 @@ let AuthService = class AuthService {
         catch (err) {
             return (0, response_utils_1.errorResponse)('Erreur serveur lors de la déconnexion.');
         }
+    }
+    async createUser(dto) {
+        const hashedPassword = await bcrypt.hash(dto.password, 10);
+        let user;
+        if (dto.role === 'SuperAdmin') {
+            user = await this.prisma.adminSysteme.create({
+                data: {
+                    nomAdminSysteme: dto.nom,
+                    emailAdminSysteme: dto.email,
+                    motDePasse: hashedPassword,
+                    role: 'SuperAdmin',
+                },
+            });
+        }
+        else if (dto.role === 'admin') {
+            user = await this.prisma.employe.create({
+                data: {
+                    nomEmploye: dto.nom,
+                    emailEmploye: dto.email,
+                    motDePasse: hashedPassword,
+                    role: 'admin',
+                },
+            });
+        }
+        else if (dto.role === 'client') {
+            user = await this.prisma.client.create({
+                data: {
+                    nomClient: dto.nom,
+                    emailClient: dto.email,
+                    motDePasse: hashedPassword,
+                    role: 'client',
+                },
+            });
+        }
+        else {
+            throw new Error(`Rôle invalide : ${dto.role}`);
+        }
+        return { message: 'Utilisateur créé avec succès', user };
     }
 };
 exports.AuthService = AuthService;

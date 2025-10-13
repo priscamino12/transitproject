@@ -1,6 +1,6 @@
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../prisma/prisma.service';
-import { LoginDto } from './dto/login.dto';
+import { CreateUserDto, LoginDto } from './dto/login.dto';
 import { ConfigService } from '@nestjs/config';
 export declare class AuthService {
     private prisma;
@@ -18,5 +18,9 @@ export declare class AuthService {
         success: boolean;
         message: string;
         data: any;
+    }>;
+    createUser(dto: CreateUserDto): Promise<{
+        message: string;
+        user: any;
     }>;
 }
