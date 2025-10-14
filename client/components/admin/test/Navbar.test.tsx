@@ -1,82 +1,76 @@
 // Navbar.test.tsx
 import { render, screen, fireEvent } from "@testing-library/react";
-import { Navbar } from "../Navbar";
-import { AuthProvider, useAuth } from "@/contexts/AuthContext";
-import { ThemeProvider } from "next-themes";
-import { LanguageProvider } from "@/contexts/LanguageContext";
-import "@testing-library/jest-dom";
+import { Navbar } from "../Navbar"; // ajuste le chemin selon ton projet
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/contexts/AuthContext";
+import { useLanguage, LanguageProvider } from "@/contexts/LanguageContext";
 
-// Mock du router de Next.js
 jest.mock("next/navigation", () => ({
-  useRouter: () => ({
-    push: jest.fn(),
-  }),
+  useRouter: jest.fn(),
 }));
 
-describe("Navbar", () => {
-  const onMenuClick = jest.fn();
+jest.mock("@/contexts/LanguageContext", () => ({
+  useLanguage: jest.fn(),
+  LanguageProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+}));
 
-  const renderNavbar = () => {
-    render(
-      <ThemeProvider>
-        <LanguageProvider>
-          <AuthProvider>
-            <Navbar onMenuClick={onMenuClick} />
-          </AuthProvider>
-        </LanguageProvider>
-      </ThemeProvider>
-    );
-  };
+jest.mock("@/contexts/AuthContext", () => ({
+  useAuth: jest.fn(),
+}));
 
-  it("affiche le nom de l'utilisateur si connecté", () => {
-    // Simuler un utilisateur connecté
-    const TestComponent = () => {
-      const { setUser } = useAuth();
-      setUser({ id: 1, nom: "Prisca", email: "p@example.com", role: "admin", type: "employe" });
-      return <Navbar onMenuClick={onMenuClick} />;
-    };
+describe("Navbar dropdown menu", () => {
+  const mockPush = jest.fn();
+  const mockLogout = jest.fn();
+  const mockOnMenuClick = jest.fn();
 
-    render(
-      <ThemeProvider>
-        <LanguageProvider>
-          <AuthProvider>
-            <TestComponent />
-          </AuthProvider>
-        </LanguageProvider>
-      </ThemeProvider>
-    );
-
-    expect(screen.getByText("Prisca")).toBeInTheDocument();
+  beforeEach(() => {
+    jest.clearAllMocks();
+    (useRouter as jest.Mock).mockReturnValue({ push: mockPush });
+    (useAuth as jest.Mock).mockReturnValue({
+      user: { nom: "Test", email: "test@test.com" },
+      logout: mockLogout,
+    });
+    (useLanguage as jest.Mock).mockReturnValue({
+      language: "fr",
+      setLanguage: jest.fn(),
+    });
   });
 
-  it("appel le logout quand on clique sur Déconnexion", () => {
-    // Simuler un utilisateur connecté
-    const TestComponent = () => {
-      const { setUser } = useAuth();
-      setUser({ id: 1, nom: "Prisca", email: "p@example.com", role: "admin", type: "employe" });
-      return <Navbar onMenuClick={onMenuClick} />;
-    };
-
+  test("dropdown menu fonctionne", async () => {
     render(
-      <ThemeProvider>
-        <LanguageProvider>
-          <AuthProvider>
-            <TestComponent />
-          </AuthProvider>
-        </LanguageProvider>
-      </ThemeProvider>
+      <LanguageProvider>
+        <Navbar onMenuClick={mockOnMenuClick} />
+      </LanguageProvider>
     );
 
-    const logoutButton = screen.getByText("Déconnexion");
-    fireEvent.click(logoutButton);
-
-    expect(screen.queryByText("Prisca")).not.toBeInTheDocument();
-  });
-
-  it("ouvre le menu hamburger sur mobile", () => {
-    renderNavbar();
-    const menuButton = screen.getByRole("button", { name: /bars/i });
+    // Vérifie que le bouton menu appelle la fonction onMenuClick
+    const menuButton = screen.getByLabelText("Menu");
     fireEvent.click(menuButton);
-    expect(onMenuClick).toHaveBeenCalled();
+    expect(mockOnMenuClick).toHaveBeenCalledTimes(1);
+
+    // ouvre le menu avatar
+    const avatarButton = screen.getByLabelText("Profil");
+    fireEvent.click(avatarButton);
+
+    // clique sur Profil
+    const profilItem = await screen.findByText("Profil");
+    fireEvent.click(profilItem);
+    expect(mockPush).toHaveBeenCalledWith("/profil");
+
+    // ouvre à nouveau le menu avatar
+    fireEvent.click(avatarButton);
+
+    // clique sur Paramètres
+    const settingsItem = await screen.findByText("Paramètres");
+    fireEvent.click(settingsItem);
+    expect(mockPush).toHaveBeenCalledWith("/parametres");
+
+    // ouvre à nouveau le menu avatar
+    fireEvent.click(avatarButton);
+
+    // clique sur Déconnexion
+    const logoutItem = await screen.findByText("Déconnexion");
+    fireEvent.click(logoutItem);
+    expect(mockLogout).toHaveBeenCalled();
   });
 });

@@ -22,6 +22,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
   DropdownMenuPortal,
+  DropdownMenuSeparator,
+  IconButton,
 } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -42,6 +44,7 @@ export function Navbar({ onMenuClick }: NavbarProps) {
     <header className="flex h-16 items-center justify-between border-b border-border bg-background px-6 sticky top-0 z-50">
       {/* Menu hamburger pour mobile */}
       <Button
+        aria-label="Menu"
         variant="ghost"
         size="sm"
         onClick={onMenuClick}
@@ -62,9 +65,10 @@ export function Navbar({ onMenuClick }: NavbarProps) {
         {/* Sélecteur de langue */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="sm">
-              <FaGlobe className="h-4 w-4" /> {language.toUpperCase()}
-            </Button>
+            <IconButton
+              aria-label="change la langue">
+              <FaGlobe className="h-4 w-4" />
+            </IconButton>
           </DropdownMenuTrigger>
           <DropdownMenuPortal>
             <DropdownMenuContent
@@ -84,6 +88,7 @@ export function Navbar({ onMenuClick }: NavbarProps) {
 
         {/* Toggle Thème */}
         <Button
+          aria-label="Changer le thème"
           variant="ghost"
           size="sm"
           onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
@@ -98,15 +103,17 @@ export function Navbar({ onMenuClick }: NavbarProps) {
         {/* Notifications */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="sm" className="relative">
+            <IconButton
+              aria-label="notification">
               <FaBell className="h-4 w-4" />
               <Badge className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 text-xs">
                 3
               </Badge>
-            </Button>
+            </IconButton>
           </DropdownMenuTrigger>
           <DropdownMenuPortal>
             <DropdownMenuContent
+              side="bottom"
               align="end"
               sideOffset={6}
               className="w-56 border border-gray-200 bg-white shadow-md rounded-md"
@@ -118,41 +125,35 @@ export function Navbar({ onMenuClick }: NavbarProps) {
           </DropdownMenuPortal>
         </DropdownMenu>
 
-        {/* Profil utilisateur */}
+        {/* Profil utilisateur avec avatar */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-              <Avatar className="h-8 w-8">
-                <AvatarFallback>{firstLetter}</AvatarFallback>
-                <AvatarImage
-                  src="/diverse-user-avatars.png"
-                  alt="Avatar"
-                />
-              </Avatar>
-            </Button>
-          </DropdownMenuTrigger>
-            <DropdownMenuContent
-              side="bottom"
-              align="end"
-              sideOffset={6}
-              className="z-[9999] w-56 border border-gray-200 bg-white shadow-lg rounded-md fixed right-4 top-14"
-            >
-
-              <div className="px-4 py-2 border-b">
-                <p className="font-semibold">{user?.nom}</p>
-                <p className="text-sm text-gray-500">{user?.email}</p>
+            <IconButton
+              aria-label="Profil">
+              <div
+                className="h-8 w-8 rounded-full flex items-center justify-center bg-blue-500 text-white font-semibold text-sm"
+              >
+                {firstLetter}
               </div>
-              <DropdownMenuItem onClick={() => router.push("/profil")}>
-                <FaUser className="mr-2 h-4 w-4" /> Profil
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => router.push("/parametres")}>
-                <FaCog className="mr-2 h-4 w-4" /> Paramètres
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={logout}>
-                <FaSignOutAlt className="mr-2 h-4 w-4" /> Déconnexion
-              </DropdownMenuItem>
-            </DropdownMenuContent>
+            </IconButton>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent sideOffset={8} className="w-56">
+            <div className="px-4 py-2 border-b">
+              <p className="font-semibold">{user?.nom}</p>
+              <p className="text-sm text-gray-500">{user?.email}</p>
+            </div>
+            <DropdownMenuItem onClick={() => router.push("/profil")}>
+              <FaUser className="mr-2 h-4 w-4" /> Profil
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => router.push("/parametres")}>
+              <FaCog className="mr-2 h-4 w-4" /> Paramètres
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={logout}>
+              <FaSignOutAlt className="mr-2 h-4 w-4" /> Déconnexion
+            </DropdownMenuItem>
+          </DropdownMenuContent>
         </DropdownMenu>
+
       </div>
     </header>
   );

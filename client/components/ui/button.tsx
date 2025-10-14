@@ -40,12 +40,14 @@ function Button({
   variant,
   size,
   asChild = false,
+  noSlot = false,
   ...props
 }: React.ComponentProps<"button"> &
   VariantProps<typeof buttonVariants> & {
     asChild?: boolean
+    noSlot?: boolean
   }) {
-  const Comp = asChild ? Slot : "button"
+  const Comp = !noSlot && asChild ? Slot : "button";
 
   return (
     <Comp
@@ -53,7 +55,19 @@ function Button({
       className={cn(buttonVariants({ variant, size, className }))}
       {...props}
     />
+  );
+}
+function IconButton({ children, className, ...props }: React.ButtonHTMLAttributes<HTMLButtonElement>) {
+  return (
+    <button
+      className={`relative h-8 w-8 flex items-center justify-center rounded-full hover:bg-accent focus:outline-none ${className}`}
+      {...props}
+    >
+      {children}
+    </button>
   )
 }
 
-export { Button, buttonVariants }
+
+
+export { Button, buttonVariants,IconButton }

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import dynamic from "next/dynamic";
+import RegisterForm from "@/components/auth/components/Register";
 
 // Charger le FormLogin uniquement côté client
 const FormLogin = dynamic(() => import("@/components/auth/components/FormLogin"), { ssr: false });
@@ -100,21 +101,26 @@ export default function AuthPage() {
               )}
 
               {mode === "register" && (
-                <motion.div
-                  key="register"
-                  initial={{ x: -50, opacity: 0 }}
-                  animate={{ x: 0, opacity: 1 }}
-                  exit={{ x: 50, opacity: 0 }}
-                  transition={{ duration: 0.5 }}
-                  className="bg-white p-8 rounded-2xl shadow-lg"
-                >
-                  <h2 className="text-2xl font-bold mb-4">Créer un compte</h2>
-                  <p className="mb-6">Ici votre formulaire d'inscription.</p>
-                  <button onClick={() => setMode("login")} className="text-blue-600 font-semibold hover:underline">
-                    Déjà un compte ? Connectez-vous
+               <motion.div
+                key="register"
+                initial={{ x: 50, opacity: 0 }}
+                animate={{ x: 0, opacity: 1 }}
+                exit={{ x: -50, opacity: 0 }}
+                transition={{ duration: 0.5 }}
+              >
+                <RegisterForm onSwitch={() => setMode("login")} />
+
+                <div className="flex justify-center mt-6 md:hidden">
+                  <button
+                    onClick={() => setMode("login")}
+                    className="text-blue-600 font-semibold hover:underline"
+                  >
+                    Se connecter
                   </button>
-                </motion.div>
-              )}
+                </div>
+              </motion.div>
+            )}
+
             </AnimatePresence>
           </div>
         </motion.div>
