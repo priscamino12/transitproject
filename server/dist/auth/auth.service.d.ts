@@ -11,7 +11,21 @@ export declare class AuthService {
         status: number;
         success: boolean;
         message: string;
-        data: any;
+        data: {
+            token: string;
+            userInfo: {
+                id: number;
+                nom: string;
+                email: string;
+                role: string;
+                type: string;
+                entreprise: {
+                    idEntreprise: number;
+                    nomEntreprise: string;
+                    logoEntreprise: string | null;
+                };
+            };
+        };
     }>;
     logout(res: any): Promise<{
         status: number;

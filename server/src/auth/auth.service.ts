@@ -1,9 +1,9 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
 import { CreateUserDto } from './dto/login.dto';
-import {  LoginDto } from './dto/login.dto';
+import { LoginDto } from './dto/login.dto';
 import { successResponse, errorResponse } from '../common/response.utils';
 import { ConfigService } from '@nestjs/config';
 
@@ -15,70 +15,56 @@ export class AuthService {
     private configService: ConfigService
   ) { }
 
-  async login(loginDto: LoginDto, res: any) {
-    try {
-      let user: any = await this.prisma.adminSysteme.findUnique({
-        where: { emailAdminSysteme: loginDto.email },
-      });
+ async login(loginDto: LoginDto, res: any) {
+  const employe = await this.prisma.employe.findUnique({
+    where: { emailEmploye: loginDto.email },
+    include: {
+      entreprise: {
+        select: {
+          idEntreprise: true,
+          nomEntreprise: true,
+          logoEntreprise: true,
+        },
+      },
+    },
+  });
 
-      if (!user) {
-        user = await this.prisma.employe.findUnique({
-          where: { emailEmploye: loginDto.email },
-        });
-      }
-
-      if (!user) {
-        user = await this.prisma.client.findUnique({
-          where: { emailClient: loginDto.email },
-        });
-        if (user && !user.motDePasse) {
-          return errorResponse('Aucun mot de passe défini.', null, 401);
-        }
-      }
-
-      if (!user) {
-        return errorResponse('Utilisateur non trouvé.', null, 401);
-      }
-
-      const isPasswordValid = await bcrypt.compare(loginDto.password, user.motDePasse);
-      if (!isPasswordValid) {
-        return errorResponse('Mot de passe incorrect.', null, 401);
-      }
-
-      const role = 'role' in user ? user.role : 'SuperAdmin';
-      const type =
-        'idAdminSysteme' in user ? 'adminsysteme' :
-          'idEmploye' in user ? 'employe' : 'client';
-
-      const id =
-        'idAdminSysteme' in user ? user.idAdminSysteme :
-          'idEmploye' in user ? user.idEmploye : user.idClient;
-
-      const nom =
-        'nomAdminSysteme' in user ? user.nomAdminSysteme :
-          'nomEmploye' in user ? user.nomEmploye : user.nomClient;
-
-      const email =
-        'emailAdminSysteme' in user ? user.emailAdminSysteme :
-          'emailEmploye' in user ? user.emailEmploye : user.emailClient;
-
-      const token = this.jwtService.sign({ sub: id, email, role, type });
-
-      // On met le token dans un cookie HttpOnly
-      res.cookie('access_token', token, {
-        httpOnly: true,
-        secure: this.configService.get<string>('NODE_ENV') === 'production',
-        maxAge: 60 * 60 * 1000 * 24 * 90, // 90 jours
-      });
-
-      return successResponse('Connexion réussie', {
-        token,
-        userInfo: { id, nom, email, role, type },
-      });
-    } catch (error: any) {
-      return errorResponse(`Erreur lors de la connexion: ${error.message}`, null, 500);
-    }
+  if (!employe) {
+    throw new UnauthorizedException("Email ou mot de passe incorrect");
   }
+
+  const isMatch = await bcrypt.compare(loginDto.password, employe.motDePasse);
+  if (!isMatch) {
+    throw new UnauthorizedException("Email ou mot de passe incorrect");
+  }
+
+  const payload = {
+    sub: employe.idEmploye,
+    email: employe.emailEmploye,
+    role: employe.role,
+    type: "employe",
+  };
+
+  const token = this.jwtService.sign(payload);
+
+  return {
+    status: 200,
+    success: true,
+    message: "Connexion réussie",
+    data: {
+      token,
+      userInfo: {
+        id: employe.idEmploye,
+        nom: employe.nomEmploye,
+        email: employe.emailEmploye,
+        role: employe.role,
+        type: "employe",
+        entreprise: employe.entreprise,
+      },
+    },
+  };
+}
+
 
   async logout(res: any) {
     try {
@@ -94,7 +80,7 @@ export class AuthService {
     }
   }
 
- // auth.service.ts
+  // auth.service.ts
 
   /* async createUser(dto: CreateUserDto) {
   const hashedPassword = await bcrypt.hash(dto.password, 10);
