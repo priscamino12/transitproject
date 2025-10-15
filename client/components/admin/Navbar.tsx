@@ -42,7 +42,7 @@ export function Navbar({ onMenuClick }: NavbarProps) {
 
   return (
     <header className="flex h-16 items-center justify-between border-b border-border bg-background px-6 sticky top-0 z-50">
-      {/* Menu hamburger pour mobile */}NavbarProps
+      {/* Menu hamburger pour mobile */}
       <Button
         aria-label="Menu"
         variant="ghost"
