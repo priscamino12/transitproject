@@ -35,12 +35,14 @@ interface MenuItem {
 }
 
 export function Sidebar({ isOpen, onClose }: SidebarProps) {
+
   const pathname = usePathname();
   const { t } = useLanguage();
   const [expandedMenus, setExpandedMenus] = useState<string[]>(["transport"]);
   const router = useRouter();
 
   const { user, logout } = useAuth();
+  const firstLetter = user?.nom?.charAt(0).toUpperCase() || "E";
 
   const handleLogout = () => {
     logout?.();
@@ -164,7 +166,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
           <div className="p-6 border-b border-sidebar-border">
             <div className="flex items-center space-x-3">
               <div className="w-8 h-8 bg-sidebar-primary rounded-lg flex items-center justify-center">
-                <span className="text-sidebar-primary-foreground font-bold text-sm">PL</span>
+                <span className="text-sidebar-primary-foreground font-bold text-sm"> {firstLetter}</span>
               </div>
               <div>
                 <h1 className="text-sidebar-foreground font-bold text-lg">Transit</h1>
