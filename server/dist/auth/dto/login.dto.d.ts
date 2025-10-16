@@ -6,5 +6,5 @@ export declare class CreateUserDto {
     nom: string;
     email: string;
     password: string;
-    role: 'SuperAdmin' | 'admin' | 'client';
+    role: 'SuperAdmin';
 }

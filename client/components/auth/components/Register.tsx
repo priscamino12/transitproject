@@ -157,8 +157,9 @@ export default function RegisterForm({ onSwitch }: RegisterFormProps) {
       {step === 1 && (
         <div className="space-y-4">
           <div>
-            <label className="block font-semibold mb-1">Nom de l'entreprise</label>
+            <label htmlFor="NomEntreprise" className="block font-semibold mb-1">Nom de l'entreprise</label>
             <input
+            id="NomEntreprise"
               type="text"
               value={nomEntreprise}
               onChange={(e) => setNomEntreprise(e.target.value)}
@@ -167,8 +168,9 @@ export default function RegisterForm({ onSwitch }: RegisterFormProps) {
           </div>
 
           <div>
-            <label className="block font-semibold mb-1">Adresse (optionnel)</label>
+            <label htmlFor="adresse" className="block font-semibold mb-1">Adresse (optionnel)</label>
             <input
+            id="adresse"
               type="text"
               value={adresseEntreprise}
               onChange={(e) => setAdresseEntreprise(e.target.value)}
@@ -177,8 +179,9 @@ export default function RegisterForm({ onSwitch }: RegisterFormProps) {
           </div>
 
           <div>
-            <label className="block font-semibold mb-1">NIF</label>
+            <label htmlFor="nif" className="block font-semibold mb-1">NIF</label>
             <input
+            id="nif"
               type="text"
               value={nif}
               onChange={(e) => setNif(e.target.value)}
@@ -187,8 +190,9 @@ export default function RegisterForm({ onSwitch }: RegisterFormProps) {
           </div>
 
           <div>
-            <label className="block font-semibold mb-1">Statut juridique (optionnel)</label>
+            <label htmlFor="statut" className="block font-semibold mb-1">Statut juridique (optionnel)</label>
             <input
+            id="statut"
               type="text"
               value={statJuridique}
               onChange={(e) => setStatJuridique(e.target.value)}
@@ -198,8 +202,9 @@ export default function RegisterForm({ onSwitch }: RegisterFormProps) {
           </div>
 
           <div>
-            <label className="block font-semibold mb-1">Type d'accès</label>
+            <label htmlFor="typeAcces" className="block font-semibold mb-1">Type d'accès</label>
             <select
+            id="typeAcces"
               value={typeAccesId}
               onChange={(e) => setTypeAccesId(Number(e.target.value))}
               className="w-full border p-2 rounded"
@@ -219,8 +224,9 @@ export default function RegisterForm({ onSwitch }: RegisterFormProps) {
       {step === 2 && (
         <div className="space-y-4">
           <div>
-            <label className="block font-semibold mb-1">Date début</label>
+            <label htmlFor="dateDebut" className="block font-semibold mb-1">Date début</label>
             <input
+            id="dateDebut"
               type="date"
               value={dateDebut}
               onChange={(e) => setDateDebut(e.target.value)}
@@ -229,8 +235,9 @@ export default function RegisterForm({ onSwitch }: RegisterFormProps) {
           </div>
 
           <div>
-            <label className="block font-semibold mb-1">Date fin</label>
+            <label htmlFor="dateFin" className="block font-semibold mb-1">Date fin</label>
             <input
+            id="dateFin"
               type="date"
               value={dateFin}
               onChange={(e) => setDateFin(e.target.value)}
@@ -239,8 +246,9 @@ export default function RegisterForm({ onSwitch }: RegisterFormProps) {
           </div>
 
           <div>
-            <label className="block font-semibold mb-1">Montant</label>
+            <label htmlFor="montant" className="block font-semibold mb-1">Montant</label>
             <input
+            id="montant"
               type="number"
               value={montant}
               onChange={(e) => setMontant(e.target.value)}
@@ -249,8 +257,9 @@ export default function RegisterForm({ onSwitch }: RegisterFormProps) {
           </div>
 
           <div>
-            <label className="block font-semibold mb-1">Mode de paiement</label>
+            <label htmlFor="modePaiement" className="block font-semibold mb-1">Mode de paiement</label>
             <select
+            id="modePaiement"
               value={modePaiementId}
               onChange={(e) => setModePaiementId(Number(e.target.value))}
               className="w-full border p-2 rounded"
@@ -270,8 +279,9 @@ export default function RegisterForm({ onSwitch }: RegisterFormProps) {
       {step === 3 && (
         <div className="space-y-4">
           <div>
-            <label className="block font-semibold mb-1">Nom administrateur</label>
+            <label htmlFor="nomadmin" className="block font-semibold mb-1">Nom administrateur</label>
             <input
+            id="nomadmin"
               type="text"
               value={nomAdmin}
               onChange={(e) => setNomAdmin(e.target.value)}
@@ -280,8 +290,9 @@ export default function RegisterForm({ onSwitch }: RegisterFormProps) {
           </div>
 
           <div>
-            <label className="block font-semibold mb-1">Email administrateur</label>
+            <label htmlFor="email" className="block font-semibold mb-1">Email administrateur</label>
             <input
+            id="email"
               type="email"
               value={emailAdmin}
               onChange={(e) => setEmailAdmin(e.target.value)}
@@ -290,8 +301,9 @@ export default function RegisterForm({ onSwitch }: RegisterFormProps) {
           </div>
 
           <div>
-            <label className="block font-semibold mb-1">Mot de passe</label>
+            <label htmlFor="modepasse" className="block font-semibold mb-1">Mot de passe</label>
             <input
+            id="modepasse"
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -300,8 +312,9 @@ export default function RegisterForm({ onSwitch }: RegisterFormProps) {
           </div>
 
           <div>
-            <label className="block font-semibold mb-1">Confirmer mot de passe</label>
+            <label htmlFor="modepasseconfirm" className="block font-semibold mb-1">Confirmer mot de passe</label>
             <input
+            id="modepasseconfirm"
               type="password"
               value={confirm}
               onChange={(e) => setConfirm(e.target.value)}

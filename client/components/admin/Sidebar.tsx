@@ -62,7 +62,45 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
 
   const basePath = "/management";
 
-  const menuItems: MenuItem[] = [
+  const getMenuItems = (role: string, basePath: string, t: any): MenuItem[] => {
+  switch (role.toLowerCase()) {
+    case "superadmin":
+      return [
+        { id: "dashboard", label: t("dashboard"), icon: FiHome, href: `${basePath}/dashboardSuperAdmin` },
+        { id: "entreprises", label: t("entreprises"), icon: FiUsers, href: `${basePath}/entreprise` },
+      ];
+    case "admin":
+      return [
+        { id: "dashboard", label: t("dashboard"), icon: FiHome, href: `${basePath}/dashboardAdmin` },
+        { id: "employes", label: t("employes"), icon: FiUsers, href: `${basePath}/employe` },
+        { id: "clients", label: t("clients"), icon: FiUsers, href: `${basePath}/client` },
+        {
+          id: "transport",
+          label: t("transport"),
+          icon: FiTruck,
+          href: `${basePath}/transport`,
+          submenu: [
+            { id: "aerial", label: t("aerial"), icon: FiNavigation, href: `${basePath}/transport/aerial` },
+            { id: "maritime", label: t("maritime"), icon: FiAnchor, href: `${basePath}/transport/maritime` },
+          ],
+        },
+        { id: "transactions", label: t("transactions"), icon: FiFileText, href: `${basePath}/transactions` },
+        { id: "documents", label: t("documents"), icon: FiFolder, href: `${basePath}/documents` },
+        { id: "tracking", label: t("tracking"), icon: FiMapPin, href: `${basePath}/tracking` },
+      ];
+    case "client":
+      return [
+        { id: "tracking", label: t("tracking"), icon: FiMapPin, href: `${basePath}/tracking` },
+      ];
+    default:
+      return [];
+  }
+};
+
+  const menuItems: MenuItem[] = getMenuItems(user.type, basePath, t);
+
+
+  /* const menuItems: MenuItem[] = [
     ...(user.type.toLowerCase() !== "client"
       ? [
           {
@@ -131,7 +169,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
       icon: FiMapPin,
       href: `${basePath}/tracking`,
     },
-  ];
+  ]; */
 
   const bottomMenuItems: MenuItem[] = [
     { id: "settings", label: t("settings"), icon: FiSettings, href: `${basePath}/settings` },

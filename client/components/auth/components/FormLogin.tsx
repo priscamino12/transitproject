@@ -40,7 +40,7 @@ export default function FormLogin({ onForgot }: FormLoginProps) {
           nom,
           email,
           role,
-          type: userType,
+          type: role.toLowerCase(),
           entreprise: entreprise ?? undefined,
         };
 
@@ -65,7 +65,7 @@ export default function FormLogin({ onForgot }: FormLoginProps) {
             default:
               router.push("/");
           }
-        }, 500); // 500ms, tu peux ajuster si nécessaire
+        }, 200); // 500ms, tu peux ajuster si nécessaire
       }
 
       else {

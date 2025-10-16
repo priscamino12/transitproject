@@ -25,6 +25,7 @@ export class EmployeController {
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.employeService.findOne(id);
   }
+  
 
   @Put(':id')
   update(

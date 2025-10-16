@@ -82,7 +82,7 @@ export class AuthService {
 
   // auth.service.ts
 
-  /* async createUser(dto: CreateUserDto) {
+   async createUser(dto: CreateUserDto) {
   const hashedPassword = await bcrypt.hash(dto.password, 10);
 
   let user;
@@ -97,32 +97,13 @@ export class AuthService {
         role: 'SuperAdmin',
       },
     });
-  } else if (dto.role === 'admin') {
-    // Création d’un Employé (Admin)
-    user = await this.prisma.employe.create({
-      data: {
-        nomEmploye: dto.nom,
-        emailEmploye: dto.email,
-        motDePasse: hashedPassword,
-        role: 'admin',
-      },
-    });
-  } else if (dto.role === 'client') {
-    // Création d’un Client
-    user = await this.prisma.client.create({
-      data: {
-        nomClient: dto.nom,
-        emailClient: dto.email,
-        motDePasse: hashedPassword,
-        role: 'client',
-      },
-    });
-  } else {
+  } 
+   else {
     throw new Error(`Rôle invalide : ${dto.role}`);
   }
 
   return { message: 'Utilisateur créé avec succès', user }
-}  */
+} 
 
 
 }
