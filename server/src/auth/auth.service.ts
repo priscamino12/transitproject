@@ -72,6 +72,21 @@ export class AuthService {
 
 
       const userInfo = { userInfo: { id, nom, email, role, type } }
+      if (type === 'employe') {
+        const entrepriseInfo = await this.prisma.employe.findUnique({
+          where: { idEmploye: id },
+          select: {
+            entreprise: {
+              select: {
+                idEntreprise: true,
+                nomEntreprise: true,
+              },
+            },
+          },
+        });
+        userInfo['entreprise'] = entrepriseInfo?.entreprise || null;
+         }
+
       return successResponse('Connexion réussie', userInfo);
     } catch (error: any) {
       return errorResponse(`Erreur lors de la connexion: ${error.message}`, null, 500);

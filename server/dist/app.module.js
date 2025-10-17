@@ -19,6 +19,13 @@ const mode_paiement_module_1 = require("./mode-paiement/mode-paiement.module");
 const employe_module_1 = require("./employe/employe.module");
 const admin_systeme_module_1 = require("./admin-systeme/admin-systeme.module");
 const duree_abonnement_module_1 = require("./duree-abonnement/duree-abonnement.module");
+const dossier_module_1 = require("./dossier/dossier.module");
+const status_module_1 = require("./status/status.module");
+const expedition_module_1 = require("./expedition/expedition.module");
+const produit_controller_1 = require("./produit/produit.controller");
+const document_controller_1 = require("./document/document.controller");
+const document_service_1 = require("./document/document.service");
+const produit_service_1 = require("./produit/produit.service");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -36,7 +43,12 @@ exports.AppModule = AppModule = __decorate([
             type_acces_module_1.TypeAccesModule,
             abonnement_module_1.AbonnementModule,
             duree_abonnement_module_1.DureeAbonnementModule,
+            dossier_module_1.DossierModule,
+            status_module_1.StatusModule,
+            expedition_module_1.ExpeditionModule,
         ],
+        controllers: [produit_controller_1.ProduitController, document_controller_1.DocumentController],
+        providers: [produit_service_1.ProduitService, document_service_1.DocumentService],
     })
 ], AppModule);
 //# sourceMappingURL=app.module.js.map

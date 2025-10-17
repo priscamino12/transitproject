@@ -99,6 +99,20 @@ let AuthService = class AuthService {
                 maxAge: 60 * 60 * 1000 * 24 * 90,
             });
             const userInfo = { userInfo: { id, nom, email, role, type } };
+            if (type === 'employe') {
+                const entrepriseInfo = await this.prisma.employe.findUnique({
+                    where: { idEmploye: id },
+                    select: {
+                        entreprise: {
+                            select: {
+                                idEntreprise: true,
+                                nomEntreprise: true,
+                            },
+                        },
+                    },
+                });
+                userInfo['entreprise'] = entrepriseInfo?.entreprise || null;
+            }
             return (0, response_utils_1.successResponse)('Connexion réussie', userInfo);
         }
         catch (error) {

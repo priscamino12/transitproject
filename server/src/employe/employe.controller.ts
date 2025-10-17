@@ -5,7 +5,7 @@ import { UpdateEmployeDto } from './dto/update-employe.dto';
 
 @Controller('employe')
 export class EmployeController {
-  constructor(private readonly employeService: EmployeService) {}
+  constructor(private readonly employeService: EmployeService) { }
 
   @Post()
   create(@Body() createEmployeDto: CreateEmployeDto) {
@@ -17,22 +17,27 @@ export class EmployeController {
     return this.employeService.findAll();
   }
 
+
   @Get(':id')
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.employeService.findOne(id);
   }
-  
+
 
   @Put(':id')
   update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateEmployeDto: UpdateEmployeDto,
-  ){
+  ) {
     return this.employeService.update(id, updateEmployeDto);
   }
 
   @Delete(':id')
-  remove(@Param('id', ParseIntPipe) id: number){
+  remove(@Param('id', ParseIntPipe) id: number) {
     return this.employeService.remove(id);
+  }
+  @Get('entreprise/:idEntreprise')
+  findAllByEntreprise(@Param('idEntreprise', ParseIntPipe) idEntreprise: number) {
+    return this.employeService.findAllByEntreprise(idEntreprise);
   }
 }

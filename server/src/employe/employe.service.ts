@@ -41,17 +41,10 @@ async findAll(){
       include: { entreprise: true }  // <-- Ajouté ici
     });
     const employesResponse = employes.map(({ motDePasse, ...employe }) => employe);
-    return {
-      success: true,
-      message: 'Employés récupérés avec succès',
-      data: employesResponse,
-    };
+    return successResponse('Employés récupérés avec succès', employesResponse);
+
   } catch (error: any) {
-    return {
-      success: false,
-      message: `Erreur lors de la récupération des employés: ${error.message}`,
-      data: null,
-    };
+    return errorResponse(`Erreur lors de la récupération des employés: ${error.message}`, null, 500);
   }
 }
 
@@ -71,7 +64,7 @@ async findAllByEntreprise(idEntreprise: number) {
       }
     }
   });
-  return employes;
+  return successResponse('Employés récupérés avec succès', employes);
 }
 
 
@@ -81,24 +74,15 @@ async findAllByEntreprise(idEntreprise: number) {
         where: { idEmploye: id },
       });
       if (!employe) {
-        return {
-          success: false,
-          message: 'Employé non trouvé',
-          data: null,
-        };
+        return errorResponse('Employé non trouvé', null, 404);
+       
       }
       const { motDePasse, ...employeResponse } = employe; // Exclure motDePasse
-      return {
-        success: true,
-        message: 'Employé récupéré avec succès',
-        data: employeResponse,
-      };
+      return successResponse('Employé récupéré avec succès', employeResponse);
+      
     } catch (error: any) {
-      return {
-        success: false,
-        message: `Erreur lors de la récupération de l'employé: ${error.message}`,
-        data: null,
-      };
+      return errorResponse(`Erreur lors de la récupération de l'employé: ${error.message}`, null, 500);
+      
     }
   }
 
@@ -108,11 +92,8 @@ async findAllByEntreprise(idEntreprise: number) {
         where: { idEmploye: id },
       });
       if (!employe) {
-        return {
-          success: false,
-          message: 'Employé non trouvé',
-          data: null,
-        };
+        return errorResponse('Employé non trouvé', null, 404);
+       
       }
       if (updateEmployeDto.idEntreprise) {
         const entreprise = await this.prisma.entreprise.findUnique({

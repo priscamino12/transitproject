@@ -10,6 +10,14 @@ import { ModePaiementModule } from './mode-paiement/mode-paiement.module';
 import { EmployeModule } from './employe/employe.module';
 import { AdminSystemeModule } from './admin-systeme/admin-systeme.module';
 import { DureeAbonnementModule } from './duree-abonnement/duree-abonnement.module';
+import { DossierModule } from './dossier/dossier.module';
+import { StatusModule } from './status/status.module';
+import { ExpeditionModule } from './expedition/expedition.module';
+import { ProduitController } from './produit/produit.controller';
+import { DocumentController } from './document/document.controller';
+import { DocumentService } from './document/document.service';
+import { ProduitService } from './produit/produit.service';
+
 
 @Module({
   imports: [
@@ -24,7 +32,12 @@ import { DureeAbonnementModule } from './duree-abonnement/duree-abonnement.modul
     TypeAccesModule,
     AbonnementModule,
     DureeAbonnementModule,
+    DossierModule,
+    StatusModule,
+    ExpeditionModule,
   ],
+  controllers: [ProduitController, DocumentController],
+  providers: [ProduitService, DocumentService],
 
 })
 export class AppModule {}
