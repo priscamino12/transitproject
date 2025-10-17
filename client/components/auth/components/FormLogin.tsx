@@ -20,48 +20,62 @@ export default function FormLogin({ onForgot }: FormLoginProps) {
   const { setUser } = useAuth();
   const togglePasswordVisibility = () => setShowPassword(prev => !prev);
 
- const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
-  e.preventDefault();
-  try {
-    const res = await AuthService.login(login);
-    console.log("✅ Réponse API :", res);
+  const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    try {
+      const res = await AuthService.login(login);
+      console.log("✅ Réponse brute du backend :", res);
 
-    if (res.success) {
-      // ⚠️ On prend directement les infos dans res.data
-      const { id, nom, email, role, type } = res.data;
+      if (res.success) {
+        const { token, userInfo } = res.data;
+        const { id, nom, email, role, type, entreprise } = userInfo;
 
-      // Déterminer le type pour le menu
-      let userType: UserInfo["type"] = "client";
-      if (role.toLowerCase() === "superadmin") userType = "superadmin";
-      else if (role.toLowerCase() === "admin") userType = "admin";
-      else if (role.toLowerCase() === "client") userType = "client";
+        let userType: UserInfo["type"] = "client";
+        if (role.toLowerCase() === "superadmin") userType = "superadmin";
+        else if (role.toLowerCase() === "admin") userType = "admin";
+        else if (role.toLowerCase() === "client") userType = "client";
 
-      const userObj = { id, nom, email, type: userType, role };
-      setUser(userObj);
-      localStorage.setItem("user", JSON.stringify(userObj));
+        const userObj: UserInfo = {
+          id,
+          nom,
+          email,
+          role,
+          type: role.toLowerCase(),
+          entreprise: entreprise ?? undefined,
+        };
 
-      // Redirection selon le type
-      switch (userType) {
-        case "superadmin":
-          router.push("/management/dashboardSuperAdmin");
-          break;
-        case "admin":
-          router.push("/management/dashboardAdmin");
-          break;
-        case "client":
-          router.push("/management/client");
-          break;
-        default:
-          router.push("/");
+        setUser(userObj);
+        localStorage.setItem("user", JSON.stringify(userObj));
+
+        // Affiche le toast
+        toast.success("Connexion réussie !");
+
+        // Attendre un petit délai avant la redirection pour laisser le toast visible
+        setTimeout(() => {
+          switch (userType) {
+            case "superadmin":
+              router.push("/management/dashboardSuperAdmin");
+              break;
+            case "admin":
+              router.push("/management/dashboardAdmin");
+              break;
+            case "client":
+              router.push("/management/client");
+              break;
+            default:
+              router.push("/");
+          }
+        }, 200); // 500ms, tu peux ajuster si nécessaire
       }
-    } else {
-      toast.error(res.message || "Échec de la connexion");
+
+      else {
+        toast.error(res.message || "Échec de la connexion");
+      }
+    } catch (err: any) {
+      console.error("❌ Erreur login :", err);
+      toast.error(err.message || "Erreur lors de la connexion");
     }
-  } catch (err: any) {
-    console.error("❌ Erreur login :", err);
-    toast.error(err.message || "Erreur lors de la connexion");
-  }
-};
+  };
 
   return (
     <form className="flex flex-col gap-4 w-full max-w-md" onSubmit={handleLogin}>

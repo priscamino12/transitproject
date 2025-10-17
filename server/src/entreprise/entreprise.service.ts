@@ -6,13 +6,18 @@ import { successResponse, errorResponse } from '../utils/response.utils';
 
 @Injectable()
 export class EntrepriseService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService) { }
 
   async create(dto: CreateEntrepriseDto) {
     try {
       const entreprise = await this.prisma.entreprise.create({
         data: {
-          ...dto,
+          nomEntreprise: dto.nomEntreprise,
+          logoEntreprise: dto.logoEntreprise,
+          adresseEntreprise: dto.adresseEntreprise,
+          nif: dto.nif,
+          statJuridique: dto.statJuridique,
+          typeAccesId: dto.typeAccesId,
           statusAbonnement: 'ACTIF',
           dateDebutAbonnement: new Date(),
         },

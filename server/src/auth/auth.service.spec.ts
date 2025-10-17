@@ -6,7 +6,7 @@ import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
 import { LoginDto } from './dto/login.dto';
-import { successResponse, errorResponse } from '../common/response.utils';
+import { successResponse, errorResponse } from '../utils/response.utils';
 
 // Mock des dépendances
 const mockPrismaService = {

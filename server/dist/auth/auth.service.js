@@ -98,7 +98,8 @@ let AuthService = class AuthService {
                 secure: this.configService.get('NODE_ENV') === 'production',
                 maxAge: 60 * 60 * 1000 * 24 * 90,
             });
-            return (0, response_utils_1.successResponse)('Connexion réussie', { id, nom, email, role, type });
+            const userInfo = { userInfo: { id, nom, email, role, type } };
+            return (0, response_utils_1.successResponse)('Connexion réussie', userInfo);
         }
         catch (error) {
             return (0, response_utils_1.errorResponse)(`Erreur lors de la connexion: ${error.message}`, null, 500);

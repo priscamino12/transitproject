@@ -35,23 +35,45 @@ export class EmployeService {
     }
   }
 
-  async findAll(){
-    try {
-      const employes = await this.prisma.employe.findMany();
-      const employesResponse = employes.map(({ motDePasse, ...employe }) => employe); // Exclure motDePasse
-      return {
-        success: true,
-        message: 'Employés récupérés avec succès',
-        data: employesResponse,
-      };
-    } catch (error: any) {
-      return {
-        success: false,
-        message: `Erreur lors de la récupération des employés: ${error.message}`,
-        data: null,
-      };
-    }
+async findAll(){
+  try {
+    const employes = await this.prisma.employe.findMany({
+      include: { entreprise: true }  // <-- Ajouté ici
+    });
+    const employesResponse = employes.map(({ motDePasse, ...employe }) => employe);
+    return {
+      success: true,
+      message: 'Employés récupérés avec succès',
+      data: employesResponse,
+    };
+  } catch (error: any) {
+    return {
+      success: false,
+      message: `Erreur lors de la récupération des employés: ${error.message}`,
+      data: null,
+    };
   }
+}
+
+// employe.service.ts
+async findAllByEntreprise(idEntreprise: number) {
+  const employes = await this.prisma.employe.findMany({
+    where: { idEntreprise },
+    select: {
+      idEmploye: true,
+      nomEmploye: true,
+      emailEmploye: true,
+      role: true,
+      entreprise: {
+        select: {
+          nomEntreprise: true
+        }
+      }
+    }
+  });
+  return employes;
+}
+
 
   async findOne(id: number) {
     try {

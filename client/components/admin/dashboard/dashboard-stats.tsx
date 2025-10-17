@@ -2,61 +2,62 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useEffect, useState } from "react";
-import { FaUsers, FaShippingFast, FaFileInvoice, FaChartLine, FaArrowUp, FaArrowDown } from "react-icons/fa";
-import { getTotalExpeditions, getExpeditionsOnYear } from "./dashboardService";
+import { FaUsers, FaDollarSign, FaShippingFast, FaChartLine, FaArrowUp, FaArrowDown } from "react-icons/fa";
+import { getTotalEntreprises, getAbonnementsActifs, getRevenusTotaux } from "./service/dashboard.service";
+import { DashboardStatsType } from "./type/dashboardtype";
 
 export function DashboardStats() {
-  const [expedition, setExpedition] = useState(0);
-  const [expeditionMaritime, setExpeditionMaritime] = useState(0);
-  const [expeditionAerienne, setExpeditionAerienne] = useState(0);
-  const [expeditionOnYear, setExpeditionOnYear] = useState(0);
+  const [totalEntreprises, setTotalEntreprises] = useState(0);
+  const [abonnementsActifs, setAbonnementsActifs] = useState(0);
+  const [revenus, setRevenus] = useState(0);
+  const [totalExpeditions, setTotalExpeditions] = useState(320); // valeur manuelle pour l'instant
 
   useEffect(() => {
-    async function fetchStats() {
-      const total = await getTotalExpeditions();
-      setExpedition(total);
+    const fetchData = async () => {
+      const entreprises = await getTotalEntreprises();
+      setTotalEntreprises(entreprises);
 
-      const { total: onYear, maritime, aerienne } = await getExpeditionsOnYear();
-      setExpeditionOnYear(onYear);
-      setExpeditionMaritime(maritime);
-      setExpeditionAerienne(aerienne);
-    }
+      const abonnements = await getAbonnementsActifs();
+      setAbonnementsActifs(abonnements);
 
-    fetchStats();
+      const revenusTotaux = await getRevenusTotaux();
+      setRevenus(revenusTotaux);
+    };
+    fetchData();
   }, []);
 
-  const stats = [
+  const stats: DashboardStatsType[] = [
     {
-      title: "Total expéditions",
-      value: expedition,
-      change: "+12%",
+      title: "Entreprises inscrites",
+      value: totalEntreprises,
+      change: "+10%",
       description: "par rapport au mois dernier",
       changeType: "positive",
-      icon: FaShippingFast,
+      icon: FaUsers,
     },
     {
-      title: "Expéditions maritimes",
-      value: expeditionMaritime,
-      change: "-3%",
-      description: "cette année",
+      title: "Abonnements actifs",
+      value: abonnementsActifs,
+      change: "-2%",
+      description: "par rapport au mois dernier",
       changeType: "negative",
-      icon: FaFileInvoice,
-    },
-    {
-      title: "Expéditions aériennes",
-      value: expeditionAerienne,
-      change: "+5%",
-      description: "cette année",
-      changeType: "positive",
       icon: FaChartLine,
     },
     {
+      title: "Revenus de l'application",
+      value: `€${revenus.toLocaleString()}`,
+      change: "+15%",
+      description: "ce mois-ci",
+      changeType: "positive",
+      icon: FaDollarSign,
+    },
+    {
       title: "Expéditions cette année",
-      value: expeditionOnYear,
+      value: totalExpeditions,
       change: "+8%",
       description: "comparé à l'an dernier",
       changeType: "positive",
-      icon: FaUsers,
+      icon: FaShippingFast,
     },
   ];
 

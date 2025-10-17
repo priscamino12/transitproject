@@ -4,6 +4,7 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
+  --sidebar-gradient: linear-gradient(180deg, oklch(57.113% 0.13 239.347), oklch(60% 0.15 250));
   --background: oklch(0.98 0 0);
   --foreground: oklch(0.15 0 0);
   --card: oklch(1 0 0);
@@ -11,7 +12,7 @@
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.15 0 0);
   /* Updated primary colors to royal blue */
-  --primary:  oklch(57.113% 0.12916 239.347);
+  --primary:  oklch(75% 0.10 230);
   --primary-foreground: oklch(0.98 0 0);
   /* Updated secondary colors to gray */
   --secondary: oklch(0.9 0 0);
@@ -32,63 +33,64 @@
   --chart-5: oklch(0.769 0.188 70.08);
   --radius: 0.625rem;
   /* Updated sidebar colors to match royal blue theme */
-  --sidebar: oklch(57.113% 0.12916 239.347);
+  --sidebar: oklch(68.945% 0.15255 238.615);
   --sidebar-foreground: oklch(0.98 0 0);
   --sidebar-primary: oklch(0.98 0 0);
   --sidebar-primary-foreground: oklch(44.252% 0.17462 259.705);
   --sidebar-accent: oklch(52.533% 0.17996 256.949);
   --sidebar-accent-foreground: oklch(0.98 0 0);
-  --sidebar-border: oklch(53.817% 0.13938 261.518);
+  --sidebar-border: oklch(63.457% 0.10278 232.129);
   --sidebar-ring: oklch(0.98 0 0);
 }
 
 .dark {
-  --background: oklch(0.22 0 0); /* gris anthracite (fond général) */
+  --background: oklch(0.35 0 0); /* gris foncé doux pour le fond */
   --foreground: oklch(0.95 0 0); /* texte clair */
 
-  --card: oklch(0.26 0 0);       /* cartes un peu plus claires */
+  --card: oklch(0.42 0 0);       /* cartes un peu plus claires que le fond */
   --card-foreground: oklch(0.95 0 0);
 
-  --popover: oklch(0.26 0 0);
+  --popover: oklch(0.42 0 0);
   --popover-foreground: oklch(0.95 0 0);
 
   /* Couleurs principales */
   --primary: oklch(0.45 0.15 250); /* bleu royal */
   --primary-foreground: oklch(0.98 0 0);
 
-  --secondary: oklch(0.3 0 0);        /* gris moyen */
-  --secondary-foreground: oklch(0.85 0 0);
+  --secondary: oklch(0.5 0 0);       /* gris moyen */
+  --secondary-foreground: oklch(91.829% 0.0076 16.54);
 
-  --muted: oklch(0.28 0 0);           /* gris pour zones muted */
-  --muted-foreground: oklch(0.7 0 0);
+  --muted: oklch(0.48 0 0);          /* gris doux */
+  --muted-foreground: oklch(84.71% 0.01114 16.902);
 
-  --accent: oklch(0.32 0 0);          /* gris foncé avec accent */
+  --accent: oklch(0.55 0 0);         /* gris clair pour accent */
   --accent-foreground: oklch(0.45 0.15 250);
 
   --destructive: oklch(0.396 0.141 25.723);
   --destructive-foreground: oklch(0.98 0 0);
 
-  --border: oklch(0.3 0 0);           /* gris plus visible */
-  --input: oklch(0.25 0 0);           /* champs d’entrée */
-  --ring: oklch(0.45 0.15 250);       /* bleu royal */
+  --border: oklch(0.48 0 0);         /* gris pour bordures */
+  --input: oklch(0.50 0 0);          /* champs d’entrée légèrement clair */
+  --ring: oklch(59.307% 0.17003 252.503);      /* bleu royal */
 
   /* Charts */
-  --chart-1: oklch(0.45 0.15 250);
+  --chart-1: oklch(63.691% 0.16209 251.214);
   --chart-2: oklch(0.696 0.17 162.48);
   --chart-3: oklch(0.769 0.188 70.08);
   --chart-4: oklch(0.627 0.265 303.9);
   --chart-5: oklch(0.645 0.246 16.439);
 
-  /* Sidebar adaptée */
-  --sidebar: oklch(0.24 0 0);             /* gris anthracite */
-  --sidebar-foreground: oklch(0.9 0 0);   /* texte clair */
+  /* Sidebar */
+  --sidebar: oklch(0.38 0 0);             /* gris moyen */
+  --sidebar-foreground: oklch(0.95 0 0);  /* texte clair */
   --sidebar-primary: oklch(0.45 0.15 250); /* bleu royal */
   --sidebar-primary-foreground: oklch(0.98 0 0);
-  --sidebar-accent: oklch(0.28 0 0);
-  --sidebar-accent-foreground: oklch(0.9 0 0);
-  --sidebar-border: oklch(0.3 0 0);
+  --sidebar-accent: oklch(0.48 0 0);       /* gris accent */
+  --sidebar-accent-foreground: oklch(0.95 0 0);
+  --sidebar-border: oklch(0.50 0 0);
   --sidebar-ring: oklch(0.45 0.15 250);
 }
+
 
 
 @theme inline {
@@ -139,4 +141,8 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+[data-slot="dropdown-menu-portal"] {
+  position: relative;
+  z-index: 9999 !important;
 }

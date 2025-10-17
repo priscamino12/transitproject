@@ -10,7 +10,7 @@ export class CreateEntrepriseDto {
   logoEntreprise?: string;
 
   @IsOptional() 
-  @IsString()
+  @IsString()z
   adresseEntreprise?: string;
 
   @IsNotEmpty()

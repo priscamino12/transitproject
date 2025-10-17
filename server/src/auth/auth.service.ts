@@ -67,10 +67,12 @@ export class AuthService {
       res.cookie('access_token', token, {
         httpOnly: true,
         secure: this.configService.get<string>('NODE_ENV') === 'production',
-        maxAge:  60 * 60 * 1000 *24 * 90, // 90 jours
+        maxAge: 60 * 60 * 1000 * 24 * 90, // 90 jours
       });
 
-      return successResponse('Connexion réussie', { id, nom, email, role, type });
+
+      const userInfo = { userInfo: { id, nom, email, role, type } }
+      return successResponse('Connexion réussie', userInfo);
     } catch (error: any) {
       return errorResponse(`Erreur lors de la connexion: ${error.message}`, null, 500);
     }

@@ -9,6 +9,11 @@ export interface UserInfo {
   email: string;
   role: string;
   type: string;
+  entreprise?: {
+    idEntreprise: number;
+    nomEntreprise: string;
+    logoEntreprise?: string;
+  }
 }
 export interface User {
   id: number;
@@ -16,13 +21,23 @@ export interface User {
   email: string;
   role: string;
   type: string;
+  entreprise: {
+    idEntreprise: number;
+    nomEntreprise: string;
+    logoEntreprise?: string | null;
+  } | null
+
 }
 
 export interface LoginResponse {
   success: boolean;
   message: string;
-  data: User;
+  data: {
+    token: string;
+    userInfo: UserInfo;
+  };
 }
+
 
 
 

@@ -6,7 +6,7 @@ import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../prisma/prisma.service';
 import { LoginDto } from './dto/login.dto';
-import { successResponse, errorResponse } from '../common/response.utils';
+import { successResponse, errorResponse } from '../utils/response.utils';
 
 describe('AuthController', () => {
   let controller: AuthController;
